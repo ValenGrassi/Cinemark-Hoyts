@@ -1,0 +1,232 @@
+"use client"
+
+import { useState } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { AlertTriangle, MapPin, Calendar, Upload, Eye } from 'lucide-react'
+import { Cinema } from '../types/cinema'
+import { calculateBatteryRemainingLife, isBatteryDueForReplacement } from '../utils/battery-utils'
+
+interface CinemaListProps {
+  cinemas: Cinema[]
+  onSelectCinema: (cinema: Cinema) => void
+  onUploadExcel: (file: File, cinemaId?: string) => void
+}
+
+export function CinemaList({ cinemas, onSelectCinema, onUploadExcel }: CinemaListProps) {
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+
+  const filteredCinemas = cinemas.filter(cinema =>
+    cinema.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    cinema.location.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+    }
+  }
+
+  const handleUploadSubmit = (cinemaId?: string) => {
+    if (selectedFile) {
+      onUploadExcel(selectedFile, cinemaId)
+      setSelectedFile(null)
+    }
+  }
+
+  const getUPSWarnings = (cinema: Cinema) => {
+    return cinema.rackComponents.filter(component => {
+      if (component.type === 'ups' && component.batteryInstallDate && component.batteryLifespan) {
+        return isBatteryDueForReplacement(component.batteryInstallDate, component.batteryLifespan)
+      }
+      return false
+    }).length
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Cinema Locations</h1>
+          <p className="text-gray-600 mt-2">Manage server racks across all cinema locations</p>
+        </div>
+        
+        {/* Excel Upload */}
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex items-center gap-2">
+            <Label htmlFor="excel-upload" className="cursor-pointer">
+              <Input
+                id="excel-upload"
+                type="file"
+                accept=".xlsx,.xls,.csv"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <Button variant="outline" className="flex items-center gap-2">
+                <Upload className="h-4 w-4" />
+                Upload Excel
+              </Button>
+            </Label>
+            {selectedFile && (
+              <Button onClick={() => handleUploadSubmit()} className="flex items-center gap-2">
+                Import Data
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Search */}
+      <div className="max-w-md">
+        <Input
+          placeholder="Search cinemas by name or location..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-blue-600">{cinemas.length}</div>
+            <div className="text-sm text-gray-600">Total Locations</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-green-600">
+              {cinemas.reduce((acc, cinema) => acc + cinema.rackComponents.filter(c => c.status === 'online').length, 0)}
+            </div>
+            <div className="text-sm text-gray-600">Online Components</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-yellow-600">
+              {cinemas.reduce((acc, cinema) => acc + getUPSWarnings(cinema), 0)}
+            </div>
+            <div className="text-sm text-gray-600">UPS Warnings</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-purple-600">
+              {cinemas.reduce((acc, cinema) => acc + cinema.rackComponents.filter(c => c.type === 'ups').length, 0)}
+            </div>
+            <div className="text-sm text-gray-600">Total UPS Units</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Cinema Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredCinemas.map((cinema) => {
+          const upsWarnings = getUPSWarnings(cinema)
+          const upsComponents = cinema.rackComponents.filter(c => c.type === 'ups')
+          
+          return (
+            <Card key={cinema.id} className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <MapPin className="h-5 w-5 text-gray-500" />
+                      {cinema.name}
+                    </CardTitle>
+                    <CardDescription>{cinema.location}</CardDescription>
+                  </div>
+                  {upsWarnings > 0 && (
+                    <Badge variant="destructive" className="flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3" />
+                      {upsWarnings} UPS Warning{upsWarnings > 1 ? 's' : ''}
+                    </Badge>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="text-sm text-gray-600">
+                  <p>{cinema.address}</p>
+                </div>
+
+                {/* UPS Status */}
+                <div className="space-y-2">
+                  <h4 className="font-medium text-sm">UPS Status</h4>
+                  {upsComponents.map((ups) => {
+                    const remainingMonths = ups.batteryInstallDate && ups.batteryLifespan 
+                      ? calculateBatteryRemainingLife(ups.batteryInstallDate, ups.batteryLifespan)
+                      : null
+                    const isDue = ups.batteryInstallDate && ups.batteryLifespan
+                      ? isBatteryDueForReplacement(ups.batteryInstallDate, ups.batteryLifespan)
+                      : false
+
+                    return (
+                      <div key={ups.id} className="flex justify-between items-center text-xs">
+                        <span>{ups.name}</span>
+                        <div className="flex items-center gap-2">
+                          {remainingMonths !== null && (
+                            <span className={`px-2 py-1 rounded ${isDue ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                              {remainingMonths}m left
+                            </span>
+                          )}
+                          <div className={`w-2 h-2 rounded-full ${
+                            ups.status === 'online' ? 'bg-green-500' : 
+                            ups.status === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
+                          }`} />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                  <div>
+                    <div className="font-medium">{cinema.rackComponents.length}</div>
+                    <div className="text-gray-500">Components</div>
+                  </div>
+                  <div>
+                    <div className="font-medium">{cinema.rackComponents.filter(c => c.status === 'online').length}</div>
+                    <div className="text-gray-500">Online</div>
+                  </div>
+                  <div>
+                    <div className="font-medium">{upsComponents.length}</div>
+                    <div className="text-gray-500">UPS Units</div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center pt-2 border-t">
+                  <div className="flex items-center gap-1 text-xs text-gray-500">
+                    <Calendar className="h-3 w-3" />
+                    Updated {cinema.lastUpdated}
+                  </div>
+                  <Button 
+                    size="sm" 
+                    onClick={() => onSelectCinema(cinema)}
+                    className="flex items-center gap-1"
+                  >
+                    <Eye className="h-3 w-3" />
+                    View Rack
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+
+      {filteredCinemas.length === 0 && (
+        <div className="text-center py-12">
+          <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-500">No cinemas found matching your search.</p>
+        </div>
+      )}
+    </div>
+  )
+}
