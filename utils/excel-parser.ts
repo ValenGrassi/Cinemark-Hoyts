@@ -6,12 +6,12 @@ export interface ExcelCinemaData {
 }
 
 export function parseExcelData(data: any[]): ExcelCinemaData {
-  // This would parse actual Excel data
-  // For now, we'll return mock data structure
+  // Esto parseará datos reales de Excel
+  // Por ahora, devolvemos estructura de datos simulada
   return {
-    cinemaName: data[0]?.cinemaName || 'Unknown Cinema',
-    location: data[0]?.location || 'Unknown Location',
-    address: data[0]?.address || 'Unknown Address',
+    cinemaName: data[0]?.cinemaName || 'Cine Desconocido',
+    location: data[0]?.location || 'Ubicación Desconocida',
+    address: data[0]?.address || 'Dirección Desconocida',
     components: data || []
   }
 }
@@ -20,7 +20,7 @@ export function convertExcelToRackComponents(excelData: any[]): RackComponent[] 
   return excelData.map((row, index) => ({
     id: `component-${index}`,
     type: row.type || 'server',
-    name: row.name || `Component ${index + 1}`,
+    name: row.name || `Componente ${index + 1}`,
     status: row.status || 'online',
     position: row.position || index + 1,
     specs: {

@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label"
 import { AlertTriangle, MapPin, Calendar, Upload, Eye } from 'lucide-react'
 import { Cinema } from '../types/cinema'
 import { calculateBatteryRemainingLife, isBatteryDueForReplacement } from '../utils/battery-utils'
+// Add the import for PowerConsumptionCard at the top
+import { PowerConsumptionCard } from './power-consumption-card'
 
 interface CinemaListProps {
   cinemas: Cinema[]
@@ -50,14 +52,14 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel }: CinemaLis
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Encabezado */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Cinema Locations</h1>
-          <p className="text-gray-600 mt-2">Manage server racks across all cinema locations</p>
+          <h1 className="text-3xl font-bold text-gray-900">Ubicaciones de Cines</h1>
+          <p className="text-gray-600 mt-2">Gestiona los racks de servidores en todas las ubicaciones de cines</p>
         </div>
         
-        {/* Excel Upload */}
+        {/* Carga de Excel */}
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="flex items-center gap-2">
             <Label htmlFor="excel-upload" className="cursor-pointer">
@@ -68,35 +70,35 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel }: CinemaLis
                 onChange={handleFileUpload}
                 className="hidden"
               />
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button variant="outline" className="flex items-center gap-2 cursor-pointer">
                 <Upload className="h-4 w-4" />
-                Upload Excel
+                Cargar Excel
               </Button>
             </Label>
             {selectedFile && (
-              <Button onClick={() => handleUploadSubmit()} className="flex items-center gap-2">
-                Import Data
+              <Button onClick={() => handleUploadSubmit()} className="flex items-center gap-2 cursor-pointer">
+                Importar Datos
               </Button>
             )}
           </div>
         </div>
       </div>
 
-      {/* Search */}
+      {/* Búsqueda */}
       <div className="max-w-md">
         <Input
-          placeholder="Search cinemas by name or location..."
+          placeholder="Buscar cines por nombre o ubicación..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
 
-      {/* Summary Cards */}
+      {/* Tarjetas de Resumen */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-blue-600">{cinemas.length}</div>
-            <div className="text-sm text-gray-600">Total Locations</div>
+            <div className="text-sm text-gray-600">Total de Ubicaciones</div>
           </CardContent>
         </Card>
         <Card>
@@ -104,7 +106,7 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel }: CinemaLis
             <div className="text-2xl font-bold text-green-600">
               {cinemas.reduce((acc, cinema) => acc + cinema.rackComponents.filter(c => c.status === 'online').length, 0)}
             </div>
-            <div className="text-sm text-gray-600">Online Components</div>
+            <div className="text-sm text-gray-600">Componentes En Línea</div>
           </CardContent>
         </Card>
         <Card>
@@ -112,7 +114,7 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel }: CinemaLis
             <div className="text-2xl font-bold text-yellow-600">
               {cinemas.reduce((acc, cinema) => acc + getUPSWarnings(cinema), 0)}
             </div>
-            <div className="text-sm text-gray-600">UPS Warnings</div>
+            <div className="text-sm text-gray-600">Alertas UPS</div>
           </CardContent>
         </Card>
         <Card>
@@ -120,12 +122,12 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel }: CinemaLis
             <div className="text-2xl font-bold text-purple-600">
               {cinemas.reduce((acc, cinema) => acc + cinema.rackComponents.filter(c => c.type === 'ups').length, 0)}
             </div>
-            <div className="text-sm text-gray-600">Total UPS Units</div>
+            <div className="text-sm text-gray-600">Total Unidades UPS</div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Cinema Cards */}
+      {/* Tarjetas de Cines */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredCinemas.map((cinema) => {
           const upsWarnings = getUPSWarnings(cinema)
@@ -145,7 +147,7 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel }: CinemaLis
                   {upsWarnings > 0 && (
                     <Badge variant="destructive" className="flex items-center gap-1">
                       <AlertTriangle className="h-3 w-3" />
-                      {upsWarnings} UPS Warning{upsWarnings > 1 ? 's' : ''}
+                      {upsWarnings} Alerta{upsWarnings > 1 ? 's' : ''} UPS
                     </Badge>
                   )}
                 </div>
@@ -155,9 +157,9 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel }: CinemaLis
                   <p>{cinema.address}</p>
                 </div>
 
-                {/* UPS Status */}
+                {/* Estado UPS */}
                 <div className="space-y-2">
-                  <h4 className="font-medium text-sm">UPS Status</h4>
+                  <h4 className="font-medium text-sm">Estado UPS</h4>
                   {upsComponents.map((ups) => {
                     const remainingMonths = ups.batteryInstallDate && ups.batteryLifespan 
                       ? calculateBatteryRemainingLife(ups.batteryInstallDate, ups.batteryLifespan)
@@ -172,7 +174,7 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel }: CinemaLis
                         <div className="flex items-center gap-2">
                           {remainingMonths !== null && (
                             <span className={`px-2 py-1 rounded ${isDue ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                              {remainingMonths}m left
+                              {remainingMonths}m restantes
                             </span>
                           )}
                           <div className={`w-2 h-2 rounded-full ${
@@ -185,34 +187,53 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel }: CinemaLis
                   })}
                 </div>
 
-                {/* Stats */}
+                {/* Consumo de Energía */}
+                <div className="space-y-2">
+                  <h4 className="font-medium text-sm">Consumo de Energía</h4>
+                  <div className="flex justify-between items-center text-xs">
+                    <span>Consumo Total:</span>
+                    <span className="font-medium text-blue-600">{cinema.totalPowerConsumption}W</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <span>Autonomía UPS:</span>
+                    <span className={`font-medium ${cinema.upsAutonomyHours < 2 ? 'text-red-600' : cinema.upsAutonomyHours < 4 ? 'text-yellow-600' : 'text-green-600'}`}>
+                      {cinema.upsAutonomyHours}h
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <span>Capacidad UPS:</span>
+                    <span className="font-medium text-purple-600">{cinema.upsCapacityVA}VA</span>
+                  </div>
+                </div>
+
+                {/* Estadísticas */}
                 <div className="grid grid-cols-3 gap-2 text-center text-xs">
                   <div>
                     <div className="font-medium">{cinema.rackComponents.length}</div>
-                    <div className="text-gray-500">Components</div>
+                    <div className="text-gray-500">Componentes</div>
                   </div>
                   <div>
                     <div className="font-medium">{cinema.rackComponents.filter(c => c.status === 'online').length}</div>
-                    <div className="text-gray-500">Online</div>
+                    <div className="text-gray-500">En Línea</div>
                   </div>
                   <div>
                     <div className="font-medium">{upsComponents.length}</div>
-                    <div className="text-gray-500">UPS Units</div>
+                    <div className="text-gray-500">Unidades UPS</div>
                   </div>
                 </div>
 
                 <div className="flex justify-between items-center pt-2 border-t">
                   <div className="flex items-center gap-1 text-xs text-gray-500">
                     <Calendar className="h-3 w-3" />
-                    Updated {cinema.lastUpdated}
+                    Actualizado {cinema.lastUpdated}
                   </div>
                   <Button 
                     size="sm" 
                     onClick={() => onSelectCinema(cinema)}
-                    className="flex items-center gap-1"
+                    className="flex items-center gap-1 cursor-pointer"
                   >
                     <Eye className="h-3 w-3" />
-                    View Rack
+                    Ver Rack
                   </Button>
                 </div>
               </CardContent>
@@ -224,7 +245,7 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel }: CinemaLis
       {filteredCinemas.length === 0 && (
         <div className="text-center py-12">
           <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500">No cinemas found matching your search.</p>
+          <p className="text-gray-500">No se encontraron cines que coincidan con tu búsqueda.</p>
         </div>
       )}
     </div>

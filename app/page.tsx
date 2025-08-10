@@ -39,7 +39,7 @@ const rackData: RackComponent[] = [
   {
     id: 'server-1',
     type: 'server',
-    name: 'Web Server 01',
+    name: 'Servidor Web 01',
     status: 'online',
     position: 1,
     specs: {
@@ -49,12 +49,12 @@ const rackData: RackComponent[] = [
       temperature: 42,
       powerUsage: 180
     },
-    description: 'Primary web application server handling frontend requests'
+    description: 'Servidor principal de aplicaciones web que maneja solicitudes frontend'
   },
   {
     id: 'server-2',
     type: 'server',
-    name: 'Database Server',
+    name: 'Servidor de Base de Datos',
     status: 'online',
     position: 2,
     specs: {
@@ -64,24 +64,24 @@ const rackData: RackComponent[] = [
       temperature: 38,
       powerUsage: 220
     },
-    description: 'PostgreSQL database server with high availability setup'
+    description: 'Servidor de base de datos PostgreSQL con configuración de alta disponibilidad'
   },
   {
     id: 'patch-1',
     type: 'patch-panel',
-    name: 'Network Patch Panel A',
+    name: 'Panel de Conexiones de Red A',
     status: 'online',
     position: 3,
     specs: {
       ports: 48,
       connections: 42
     },
-    description: '48-port Cat6A patch panel for network connectivity'
+    description: 'Panel de conexiones Cat6A de 48 puertos para conectividad de red'
   },
   {
     id: 'server-3',
     type: 'server',
-    name: 'Backup Server',
+    name: 'Servidor de Respaldo',
     status: 'warning',
     position: 4,
     specs: {
@@ -91,12 +91,12 @@ const rackData: RackComponent[] = [
       temperature: 55,
       powerUsage: 150
     },
-    description: 'Backup and disaster recovery server - temperature warning'
+    description: 'Servidor de respaldo y recuperación ante desastres - advertencia de temperatura'
   },
   {
     id: 'server-4',
     type: 'server',
-    name: 'Load Balancer',
+    name: 'Balanceador de Carga',
     status: 'online',
     position: 5,
     specs: {
@@ -106,24 +106,24 @@ const rackData: RackComponent[] = [
       temperature: 35,
       powerUsage: 95
     },
-    description: 'HAProxy load balancer distributing traffic across web servers'
+    description: 'Balanceador de carga HAProxy que distribuye tráfico entre servidores web'
   },
   {
     id: 'patch-2',
     type: 'patch-panel',
-    name: 'Network Patch Panel B',
+    name: 'Panel de Conexiones de Red B',
     status: 'maintenance',
     position: 6,
     specs: {
       ports: 24,
       connections: 18
     },
-    description: '24-port fiber optic patch panel - scheduled maintenance'
+    description: 'Panel de conexiones de fibra óptica de 24 puertos - mantenimiento programado'
   },
   {
     id: 'server-5',
     type: 'server',
-    name: 'Monitoring Server',
+    name: 'Servidor de Monitoreo',
     status: 'offline',
     position: 7,
     specs: {
@@ -133,12 +133,12 @@ const rackData: RackComponent[] = [
       temperature: 0,
       powerUsage: 0
     },
-    description: 'System monitoring and alerting server - currently offline'
+    description: 'Servidor de monitoreo y alertas del sistema - actualmente desconectado'
   },
   {
     id: 'ups-1',
     type: 'ups',
-    name: 'Main UPS',
+    name: 'UPS Principal',
     status: 'online',
     position: 8,
     specs: {
@@ -149,7 +149,7 @@ const rackData: RackComponent[] = [
       batteryInstallDate: '2023-01-15',
       batteryLifespan: 36
     },
-    description: 'Main UPS for power backup'
+    description: 'UPS principal para respaldo de energía'
   }
 ]
 
@@ -187,18 +187,18 @@ export default function CinemaManagementApp() {
 
   const handleUploadExcel = async (file: File, cinemaId?: string) => {
     try {
-      // In a real application, you would parse the Excel file here
-      // For now, we'll simulate the process
-      console.log('Uploading Excel file:', file.name)
+      // En una aplicación real, aquí analizarías el archivo Excel
+      // Por ahora, simularemos el proceso
+      console.log('Cargando archivo Excel:', file.name)
       
-      // Simulate Excel parsing
+      // Simular análisis de Excel
       const mockExcelData = [
         {
-          cinemaName: 'New Cinema Location',
+          cinemaName: 'Nueva Ubicación de Cine',
           location: 'Villa Ballester',
           address: 'Av. San Martín 1234, Villa Ballester',
           type: 'server',
-          name: 'Projection Server',
+          name: 'Servidor de Proyección',
           status: 'online',
           position: 1,
           cpu: 'Intel Xeon E5-2680',
@@ -207,7 +207,7 @@ export default function CinemaManagementApp() {
         },
         {
           type: 'ups',
-          name: 'Main UPS',
+          name: 'UPS Principal',
           status: 'online',
           position: 2,
           capacity: '2000VA / 1800W',
@@ -220,7 +220,7 @@ export default function CinemaManagementApp() {
       ]
 
       if (cinemaId) {
-        // Update existing cinema
+        // Actualizar cine existente
         const updatedCinemas = cinemas.map(cinema => {
           if (cinema.id === cinemaId) {
             const newComponents = convertExcelToRackComponents(mockExcelData)
@@ -234,7 +234,7 @@ export default function CinemaManagementApp() {
         })
         setCinemas(updatedCinemas)
       } else {
-        // Create new cinema
+        // Crear nuevo cine
         const excelData = parseExcelData(mockExcelData)
         const newCinema: Cinema = {
           id: `cinema-${Date.now()}`,
@@ -248,10 +248,10 @@ export default function CinemaManagementApp() {
         setCinemas([...cinemas, newCinema])
       }
 
-      alert('Excel data imported successfully!')
+      alert('¡Datos de Excel importados exitosamente!')
     } catch (error) {
-      console.error('Error uploading Excel file:', error)
-      alert('Error importing Excel data. Please try again.')
+      console.error('Error al cargar archivo Excel:', error)
+      alert('Error al importar datos de Excel. Por favor, inténtalo de nuevo.')
     }
   }
 
