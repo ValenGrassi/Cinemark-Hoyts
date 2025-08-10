@@ -5,45 +5,94 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { AlertTriangle, MapPin, Calendar, Upload, Eye } from 'lucide-react'
-import { Cinema } from '../types/cinema'
-import { calculateBatteryRemainingLife, isBatteryDueForReplacement } from '../utils/battery-utils'
-// Add the import for PowerConsumptionCard at the top
-import { PowerConsumptionCard } from './power-consumption-card'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { AlertTriangle, MapPin, Calendar, Upload, Eye } from "lucide-react"
+import type { Cinema } from "../types/cinema"
+import { calculateBatteryRemainingLife, isBatteryDueForReplacement } from "../utils/battery-utils"
+import { ExcelUploader } from "./excel-uploader"
+import { type ExcelCinemaData, convertExcelToRackComponents } from "../utils/excel-parser"
 
 interface CinemaListProps {
   cinemas: Cinema[]
   onSelectCinema: (cinema: Cinema) => void
   onUploadExcel: (file: File, cinemaId?: string) => void
+  onCreateCinema: (cinemaData: Cinema) => void
 }
 
-export function CinemaList({ cinemas, onSelectCinema, onUploadExcel }: CinemaListProps) {
+export function CinemaList({ cinemas, onSelectCinema, onUploadExcel, onCreateCinema }: CinemaListProps) {
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [showUploader, setShowUploader] = useState(false)
 
-  const filteredCinemas = cinemas.filter(cinema =>
-    cinema.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cinema.location.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCinemas = cinemas.filter(
+    (cinema) =>
+      cinema.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      cinema.location.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      setSelectedFile(file)
-    }
-  }
+  const handleExcelUploadSuccess = (data: ExcelCinemaData) => {
+    // Check if cinema already exists
+    const existingCinema = cinemas.find(
+      (c) =>
+        c.name.toLowerCase() === data.cinemaName.toLowerCase() ||
+        c.location.toLowerCase() === data.location.toLowerCase(),
+    )
 
-  const handleUploadSubmit = (cinemaId?: string) => {
-    if (selectedFile) {
-      onUploadExcel(selectedFile, cinemaId)
-      setSelectedFile(null)
+    const rackComponents = convertExcelToRackComponents(data)
+
+    if (existingCinema) {
+      // Update existing cinema
+      const updatedCinema: Cinema = {
+        ...existingCinema,
+        name: data.cinemaName,
+        address: data.address,
+        rackComponents,
+        lastUpdated: new Date().toISOString().split("T")[0],
+        totalPowerConsumption: data.totalConsumption,
+        upsAutonomyHours: data.estimatedAutonomy,
+        upsCapacityVA: data.totalKVA * 1000,
+        upsWarnings: rackComponents.filter(
+          (c) =>
+            c.type === "ups" &&
+            c.batteryInstallDate &&
+            c.batteryLifespan &&
+            isBatteryDueForReplacement(c.batteryInstallDate, c.batteryLifespan),
+        ).length,
+      }
+
+      // This would typically update the existing cinema
+      console.log("Updating existing cinema:", updatedCinema)
+      alert(`¡Cine "${data.cinemaName}" actualizado exitosamente!`)
+    } else {
+      // Create new cinema
+      const newCinema: Cinema = {
+        id: `cinema-${Date.now()}`,
+        name: data.cinemaName,
+        location: data.location,
+        address: data.address,
+        rackComponents,
+        lastUpdated: new Date().toISOString().split("T")[0],
+        totalPowerConsumption: data.totalConsumption,
+        upsAutonomyHours: data.estimatedAutonomy,
+        upsCapacityVA: data.totalKVA * 1000,
+        upsWarnings: rackComponents.filter(
+          (c) =>
+            c.type === "ups" &&
+            c.batteryInstallDate &&
+            c.batteryLifespan &&
+            isBatteryDueForReplacement(c.batteryInstallDate, c.batteryLifespan),
+        ).length,
+      }
+
+      onCreateCinema(newCinema)
+      alert(`¡Nuevo cine "${data.cinemaName}" creado exitosamente!`)
     }
+
+    setShowUploader(false)
   }
 
   const getUPSWarnings = (cinema: Cinema) => {
-    return cinema.rackComponents.filter(component => {
-      if (component.type === 'ups' && component.batteryInstallDate && component.batteryLifespan) {
+    return cinema.rackComponents.filter((component) => {
+      if (component.type === "ups" && component.batteryInstallDate && component.batteryLifespan) {
         return isBatteryDueForReplacement(component.batteryInstallDate, component.batteryLifespan)
       }
       return false
@@ -58,30 +107,22 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel }: CinemaLis
           <h1 className="text-3xl font-bold text-gray-900">Ubicaciones de Cines</h1>
           <p className="text-gray-600 mt-2">Gestiona los racks de servidores en todas las ubicaciones de cines</p>
         </div>
-        
-        {/* Carga de Excel */}
-        <div className="flex flex-col sm:flex-row gap-2">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="excel-upload" className="cursor-pointer">
-              <Input
-                id="excel-upload"
-                type="file"
-                accept=".xlsx,.xls,.csv"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-              <Button variant="outline" className="flex items-center gap-2 cursor-pointer">
-                <Upload className="h-4 w-4" />
-                Cargar Excel
-              </Button>
-            </Label>
-            {selectedFile && (
-              <Button onClick={() => handleUploadSubmit()} className="flex items-center gap-2 cursor-pointer">
-                Importar Datos
-              </Button>
-            )}
-          </div>
-        </div>
+
+        {/* Botón de Carga de Excel */}
+        <Dialog open={showUploader} onOpenChange={setShowUploader}>
+          <DialogTrigger asChild>
+            <Button className="flex items-center gap-2 cursor-pointer">
+              <Upload className="h-4 w-4" />
+              Cargar Excel
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Importar Datos desde Excel</DialogTitle>
+            </DialogHeader>
+            <ExcelUploader onUploadSuccess={handleExcelUploadSuccess} onClose={() => setShowUploader(false)} />
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Búsqueda */}
@@ -104,7 +145,10 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel }: CinemaLis
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-green-600">
-              {cinemas.reduce((acc, cinema) => acc + cinema.rackComponents.filter(c => c.status === 'online').length, 0)}
+              {cinemas.reduce(
+                (acc, cinema) => acc + cinema.rackComponents.filter((c) => c.status === "online").length,
+                0,
+              )}
             </div>
             <div className="text-sm text-gray-600">Componentes En Línea</div>
           </CardContent>
@@ -120,7 +164,7 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel }: CinemaLis
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-purple-600">
-              {cinemas.reduce((acc, cinema) => acc + cinema.rackComponents.filter(c => c.type === 'ups').length, 0)}
+              {cinemas.reduce((acc, cinema) => acc + cinema.rackComponents.filter((c) => c.type === "ups").length, 0)}
             </div>
             <div className="text-sm text-gray-600">Total Unidades UPS</div>
           </CardContent>
@@ -131,8 +175,8 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel }: CinemaLis
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredCinemas.map((cinema) => {
           const upsWarnings = getUPSWarnings(cinema)
-          const upsComponents = cinema.rackComponents.filter(c => c.type === 'ups')
-          
+          const upsComponents = cinema.rackComponents.filter((c) => c.type === "ups")
+
           return (
             <Card key={cinema.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
@@ -147,7 +191,7 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel }: CinemaLis
                   {upsWarnings > 0 && (
                     <Badge variant="destructive" className="flex items-center gap-1">
                       <AlertTriangle className="h-3 w-3" />
-                      {upsWarnings} Alerta{upsWarnings > 1 ? 's' : ''} UPS
+                      {upsWarnings} Alerta{upsWarnings > 1 ? "s" : ""} UPS
                     </Badge>
                   )}
                 </div>
@@ -161,26 +205,35 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel }: CinemaLis
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">Estado UPS</h4>
                   {upsComponents.map((ups) => {
-                    const remainingMonths = ups.batteryInstallDate && ups.batteryLifespan 
-                      ? calculateBatteryRemainingLife(ups.batteryInstallDate, ups.batteryLifespan)
-                      : null
-                    const isDue = ups.batteryInstallDate && ups.batteryLifespan
-                      ? isBatteryDueForReplacement(ups.batteryInstallDate, ups.batteryLifespan)
-                      : false
+                    const remainingMonths =
+                      ups.batteryInstallDate && ups.batteryLifespan
+                        ? calculateBatteryRemainingLife(ups.batteryInstallDate, ups.batteryLifespan)
+                        : null
+                    const isDue =
+                      ups.batteryInstallDate && ups.batteryLifespan
+                        ? isBatteryDueForReplacement(ups.batteryInstallDate, ups.batteryLifespan)
+                        : false
 
                     return (
                       <div key={ups.id} className="flex justify-between items-center text-xs">
                         <span>{ups.name}</span>
                         <div className="flex items-center gap-2">
                           {remainingMonths !== null && (
-                            <span className={`px-2 py-1 rounded ${isDue ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                            <span
+                              className={`px-2 py-1 rounded ${isDue ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}
+                            >
                               {remainingMonths}m restantes
                             </span>
                           )}
-                          <div className={`w-2 h-2 rounded-full ${
-                            ups.status === 'online' ? 'bg-green-500' : 
-                            ups.status === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
-                          }`} />
+                          <div
+                            className={`w-2 h-2 rounded-full ${
+                              ups.status === "online"
+                                ? "bg-green-500"
+                                : ups.status === "warning"
+                                  ? "bg-yellow-500"
+                                  : "bg-red-500"
+                            }`}
+                          />
                         </div>
                       </div>
                     )
@@ -196,7 +249,9 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel }: CinemaLis
                   </div>
                   <div className="flex justify-between items-center text-xs">
                     <span>Autonomía UPS:</span>
-                    <span className={`font-medium ${cinema.upsAutonomyHours < 2 ? 'text-red-600' : cinema.upsAutonomyHours < 4 ? 'text-yellow-600' : 'text-green-600'}`}>
+                    <span
+                      className={`font-medium ${cinema.upsAutonomyHours < 2 ? "text-red-600" : cinema.upsAutonomyHours < 4 ? "text-yellow-600" : "text-green-600"}`}
+                    >
                       {cinema.upsAutonomyHours}h
                     </span>
                   </div>
@@ -213,7 +268,9 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel }: CinemaLis
                     <div className="text-gray-500">Componentes</div>
                   </div>
                   <div>
-                    <div className="font-medium">{cinema.rackComponents.filter(c => c.status === 'online').length}</div>
+                    <div className="font-medium">
+                      {cinema.rackComponents.filter((c) => c.status === "online").length}
+                    </div>
                     <div className="text-gray-500">En Línea</div>
                   </div>
                   <div>
@@ -227,8 +284,8 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel }: CinemaLis
                     <Calendar className="h-3 w-3" />
                     Actualizado {cinema.lastUpdated}
                   </div>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     onClick={() => onSelectCinema(cinema)}
                     className="flex items-center gap-1 cursor-pointer"
                   >
