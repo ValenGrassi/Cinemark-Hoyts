@@ -45,6 +45,7 @@ export interface ParsedComponent {
   description?: string
   batteryInstallDate?: string
   batteryLifespan?: number
+  isUsed?: boolean
 }
 
 export function parseExcelFile(file: File): Promise<ExcelCinemaData> {
@@ -86,53 +87,47 @@ function parseExcelData(data: any[][]): ExcelCinemaData {
     patchPanelPorts: [],
   }
 
-  // Parse basic information (first section)
+  // Parse basic information - look for specific labels in column A
   for (let i = 0; i < data.length; i++) {
     const row = data[i]
     if (!row || row.length < 2) continue
 
-    const label = String(row[0] || "").toLowerCase()
+    const label = String(row[0] || "")
+      .toLowerCase()
+      .trim()
     const value = row[1]
 
-    if (label.includes("nombre del cine") || label.includes("cinema name")) {
+    if (label === "nombre del cine") {
       result.cinemaName = String(value || "")
-      // Extract location from cinema name if it contains " - "
-      const parts = result.cinemaName.split(" - ")
-      if (parts.length > 1) {
-        result.location = parts[1].trim()
-      } else {
-        result.location = result.cinemaName
-      }
-    } else if (label.includes("dirección") || label.includes("address")) {
+      result.location = result.cinemaName // Use cinema name as location
+    } else if (label === "dirección") {
       result.address = String(value || "")
-    } else if (label.includes("kva totales") || label.includes("total kva")) {
+    } else if (label === "kva totales del rack (suma ups)") {
       result.totalKVA = Number(value) || 0
-    } else if (label.includes("consumo total") || label.includes("total consumption")) {
+    } else if (label === "consumo total de componentes (w)") {
       result.totalConsumption = Number(value) || 0
-    } else if (label.includes("autonomía estimada") || label.includes("estimated autonomy")) {
+    } else if (label === "autonomía estimada (hr)") {
       result.estimatedAutonomy = Number(value) || 0
-    } else if (label.includes("fecha último cambio") || label.includes("last battery change")) {
+    } else if (label === "fecha último cambio de baterías") {
       result.lastBatteryChange = String(value || "")
-    } else if (label.includes("fecha próxima") || label.includes("next battery change")) {
+    } else if (label === "fecha próxima de cambio (aprox +4 años)") {
       result.nextBatteryChange = String(value || "")
-    } else if (label.includes("generador") || label.includes("generator")) {
-      result.hasGenerator =
-        String(value || "")
-          .toLowerCase()
-          .includes("sí") ||
-        String(value || "")
-          .toLowerCase()
-          .includes("yes")
+    } else if (label === "¿tiene generador?") {
+      result.hasGenerator = String(value || "")
+        .toLowerCase()
+        .includes("sí")
     }
   }
 
-  // Parse UPS components
+  // Parse UPS components - find the UPS table
   let upsStartIndex = -1
   for (let i = 0; i < data.length; i++) {
+    const row = data[i]
     if (
-      String(data[i]?.[0] || "")
+      row &&
+      String(row[0] || "")
         .toLowerCase()
-        .includes("ups id")
+        .trim() === "ups id"
     ) {
       upsStartIndex = i + 1
       break
@@ -142,14 +137,14 @@ function parseExcelData(data: any[][]): ExcelCinemaData {
   if (upsStartIndex > -1) {
     for (let i = upsStartIndex; i < data.length; i++) {
       const row = data[i]
-      if (!row || row.length < 4 || !row[0]) break
+      if (!row || row.length < 4 || !row[0] || String(row[0]).toLowerCase().includes("tipo")) break
 
       const upsId = String(row[0])
       const brand = String(row[1] || "")
       const model = String(row[2] || "")
       const capacity = Number(row[3]) || 0
 
-      if (upsId && brand && model) {
+      if (upsId && brand && model && capacity > 0) {
         result.upsComponents.push({
           id: upsId,
           brand,
@@ -161,8 +156,39 @@ function parseExcelData(data: any[][]): ExcelCinemaData {
     }
   }
 
-  // Parse main components
+  // Parse main components - find the components table (Tipo, Marca, Modelo, Consumo)
   let componentsStartIndex = -1
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i]
+    if (
+      row &&
+      row.length >= 4 &&
+      String(row[0] || "")
+        .toLowerCase()
+        .trim() === "tipo" &&
+      String(row[1] || "")
+        .toLowerCase()
+        .trim() === "marca" &&
+      String(row[2] || "")
+        .toLowerCase()
+        .trim() === "modelo" &&
+      String(row[3] || "")
+        .toLowerCase()
+        .includes("consumo")
+    ) {
+      componentsStartIndex = i + 1
+      break
+    }
+  }
+
+  // Parse component status table (Estado, Nº Puertos, Puertos usados)
+  const componentStatusAndPorts: Array<{
+    estado: string
+    totalPorts: number
+    usedPorts: number
+  }> = []
+
+  let statusStartIndex = -1
   for (let i = 0; i < data.length; i++) {
     const row = data[i]
     if (
@@ -170,83 +196,235 @@ function parseExcelData(data: any[][]): ExcelCinemaData {
       row.length >= 3 &&
       String(row[0] || "")
         .toLowerCase()
-        .includes("tipo") &&
+        .includes("estado") &&
       String(row[1] || "")
         .toLowerCase()
-        .includes("marca") &&
-      String(row[2] || "")
-        .toLowerCase()
-        .includes("modelo")
+        .includes("nº puertos")
     ) {
-      componentsStartIndex = i + 1
+      statusStartIndex = i + 1
       break
     }
   }
 
+  if (statusStartIndex > -1) {
+    for (let i = statusStartIndex; i < data.length; i++) {
+      const row = data[i]
+      if (!row || row.length < 3) continue
+
+      const estado = String(row[0] || "")
+        .toLowerCase()
+        .trim()
+      const totalPorts = Number(row[1]) || 0
+      const usedPorts = Number(row[2]) || 0
+
+      // Stop when we reach other sections
+      if (estado.includes("detalle") || estado.includes("ubicación")) break
+
+      if (estado && (estado.includes("usado") || estado.includes("sin usar"))) {
+        componentStatusAndPorts.push({
+          estado,
+          totalPorts,
+          usedPorts,
+        })
+      }
+    }
+  }
+
+  // Parse JSON port details - find the "Detalle de puertos (JSON)" column
+  const componentPortDetails: Array<string> = []
+  let jsonStartIndex = -1
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i]
+    if (
+      row &&
+      String(row[0] || "")
+        .toLowerCase()
+        .includes("detalle de puertos") &&
+      String(row[0] || "")
+        .toLowerCase()
+        .includes("json")
+    ) {
+      jsonStartIndex = i + 1
+      break
+    }
+  }
+
+  if (jsonStartIndex > -1) {
+    for (let i = jsonStartIndex; i < data.length; i++) {
+      const row = data[i]
+      if (!row || row.length < 1) continue
+
+      const jsonDetails = String(row[0] || "{}")
+      componentPortDetails.push(jsonDetails)
+
+      // Stop when we reach empty rows or other sections
+      if (!jsonDetails || jsonDetails.trim() === "" || jsonDetails === "{}") {
+        break
+      }
+    }
+  }
+
+  // Create components from the main components list
   if (componentsStartIndex > -1) {
     let position = 1
+    let componentIndex = 0
+
     for (let i = componentsStartIndex; i < data.length; i++) {
       const row = data[i]
-      if (!row || row.length < 3 || !row[0]) {
-        // Check if we've reached patch panel section
-        if (
-          String(row?.[0] || "")
-            .toLowerCase()
-            .includes("patchpanel") ||
-          String(row?.[0] || "")
-            .toLowerCase()
-            .includes("patch panel")
-        ) {
-          break
-        }
-        continue
-      }
+      if (!row || row.length < 4) continue
 
-      const type = String(row[0] || "").toLowerCase()
-      const brand = String(row[1] || "")
-      const model = String(row[2] || "")
+      const type = String(row[0] || "").trim()
+      const brand = String(row[1] || "").trim()
+      const model = String(row[2] || "").trim()
       const consumption = Number(row[3]) || 0
 
-      if (type && brand && model) {
-        const componentType = mapComponentType(type)
-        const component = {
-          id: `${componentType}-${position}`,
-          type: componentType,
-          name: `${brand} ${model}`,
-          brand,
-          model,
-          status: "online" as const,
-          position,
-          powerConsumption: {
-            min: Math.floor(consumption * 0.7),
-            max: Math.floor(consumption * 1.3),
-            current: consumption,
-          },
-          specs: {
-            powerUsage: consumption,
-          },
-        }
-
-        // Add specific specs based on type
-        if (componentType === "ups") {
-          const upsData = result.upsComponents.find(
-            (ups) => ups.brand.toLowerCase() === brand.toLowerCase() && ups.model.toLowerCase() === model.toLowerCase(),
-          )
-
-          component.specs = {
-            ...component.specs,
-            capacity: `${upsData?.capacityVA || 1000}VA / ${Math.floor((upsData?.capacityVA || 1000) * 0.9)}W`,
-            batteryHealth: 90,
-            loadPercentage: Math.floor((consumption / (upsData?.capacityVA || 1000)) * 100),
-            estimatedRuntime: Math.floor(result.estimatedAutonomy * 60),
-          }
-          component.batteryInstallDate = result.lastBatteryChange
-          component.batteryLifespan = 48 // 4 years in months
-        }
-
-        result.components.push(component)
-        position++
+      // Stop when we reach other sections or empty rows
+      if (
+        !type ||
+        !brand ||
+        !model ||
+        type.toLowerCase().includes("patchpanel") ||
+        type.toLowerCase().includes("estado") ||
+        type.toLowerCase().includes("detalle")
+      ) {
+        break
       }
+
+      const componentType = mapComponentType(type)
+
+      // Get status and port info for this component
+      const statusInfo = componentStatusAndPorts[componentIndex] || {
+        estado: "usado",
+        totalPorts: 0,
+        usedPorts: 0,
+      }
+
+      const isUsed = statusInfo.estado.includes("usado")
+
+      const component = {
+        id: `${componentType}-${position}`,
+        type: componentType,
+        name: `${brand} ${model}`,
+        brand,
+        model,
+        status: isUsed ? ("online" as const) : ("maintenance" as const),
+        position,
+        isUsed,
+        powerConsumption: {
+          min: Math.floor(consumption * 0.7),
+          max: Math.floor(consumption * 1.3),
+          current: consumption,
+        },
+        specs: {
+          powerUsage: consumption,
+        },
+      }
+
+      // Add port details for network components
+      if (["switch", "router", "firewall", "wireless-controller"].includes(componentType)) {
+        component.specs.ports = statusInfo.totalPorts
+        component.specs.connections = statusInfo.usedPorts
+
+        // Parse JSON port details
+        const jsonDetails = componentPortDetails[componentIndex] || "{}"
+        if (jsonDetails && jsonDetails !== "{}" && jsonDetails.trim() !== "") {
+          try {
+            const portDetails = JSON.parse(jsonDetails)
+            const portConnections: any[] = []
+
+            Object.entries(portDetails).forEach(([portRange, connection]) => {
+              if (portRange.includes("-")) {
+                // Handle port ranges like "1-20"
+                const [start, end] = portRange.split("-").map(Number)
+                for (let p = start; p <= end; p++) {
+                  portConnections.push({
+                    portNumber: p,
+                    isConnected: true,
+                    connectedTo: String(connection),
+                    status: "active",
+                    description: `Conectado a ${connection}`,
+                  })
+                }
+              } else {
+                // Handle single ports
+                const portNum = Number(portRange)
+                if (portNum) {
+                  portConnections.push({
+                    portNumber: portNum,
+                    isConnected: true,
+                    connectedTo: String(connection),
+                    status: "active",
+                    description: `Conectado a ${connection}`,
+                  })
+                }
+              }
+            })
+
+            // Fill remaining ports as inactive
+            const maxPorts = statusInfo.totalPorts || Math.max(...portConnections.map((p) => p.portNumber), 24)
+            for (let p = 1; p <= maxPorts; p++) {
+              if (!portConnections.find((pc) => pc.portNumber === p)) {
+                portConnections.push({
+                  portNumber: p,
+                  isConnected: false,
+                  status: "inactive",
+                  description: "Puerto libre",
+                })
+              }
+            }
+
+            component.specs.portDetails = portConnections.sort((a, b) => a.portNumber - b.portNumber)
+          } catch (e) {
+            console.warn("Error parsing JSON port details:", e)
+            // Create default port structure if JSON parsing fails
+            if (statusInfo.totalPorts > 0) {
+              const defaultPorts = []
+              for (let p = 1; p <= statusInfo.totalPorts; p++) {
+                defaultPorts.push({
+                  portNumber: p,
+                  isConnected: p <= statusInfo.usedPorts,
+                  status: p <= statusInfo.usedPorts ? "active" : "inactive",
+                  description: p <= statusInfo.usedPorts ? "Puerto en uso" : "Puerto libre",
+                })
+              }
+              component.specs.portDetails = defaultPorts
+            }
+          }
+        } else if (statusInfo.totalPorts > 0) {
+          // Create default port structure when no JSON is provided
+          const defaultPorts = []
+          for (let p = 1; p <= statusInfo.totalPorts; p++) {
+            defaultPorts.push({
+              portNumber: p,
+              isConnected: p <= statusInfo.usedPorts,
+              status: p <= statusInfo.usedPorts ? "active" : "inactive",
+              description: p <= statusInfo.usedPorts ? "Puerto en uso" : "Puerto libre",
+            })
+          }
+          component.specs.portDetails = defaultPorts
+        }
+      }
+
+      // Add specific specs based on type
+      if (componentType === "ups") {
+        const upsData = result.upsComponents.find(
+          (ups) => ups.brand.toLowerCase() === brand.toLowerCase() && ups.model.toLowerCase() === model.toLowerCase(),
+        )
+
+        component.specs = {
+          ...component.specs,
+          capacity: `${upsData?.capacityVA || 1000}VA / ${Math.floor((upsData?.capacityVA || 1000) * 0.9)}W`,
+          batteryHealth: 90,
+          loadPercentage: Math.floor((consumption / (upsData?.capacityVA || 1000)) * 100),
+          estimatedRuntime: Math.floor(result.estimatedAutonomy * 60),
+        }
+        component.batteryInstallDate = result.lastBatteryChange
+        component.batteryLifespan = 48 // 4 years in months
+      }
+
+      result.components.push(component)
+      position++
+      componentIndex++
     }
   }
 
@@ -258,7 +436,7 @@ function parseExcelData(data: any[][]): ExcelCinemaData {
       row &&
       String(row[0] || "")
         .toLowerCase()
-        .includes("patchpanel id")
+        .trim() === "patchpanel id"
     ) {
       patchPanelStartIndex = i + 1
       break
@@ -283,95 +461,6 @@ function parseExcelData(data: any[][]): ExcelCinemaData {
           isConnected: status.includes("usado") || status.includes("used"),
           status: status.includes("usado") || status.includes("used") ? "active" : "inactive",
         })
-      }
-    }
-  }
-
-  // Parse port details JSON (look for JSON column)
-  let portDetailsStartIndex = -1
-  for (let i = 0; i < data.length; i++) {
-    const row = data[i]
-    if (
-      row &&
-      String(row[0] || "")
-        .toLowerCase()
-        .includes("nº puertos")
-    ) {
-      portDetailsStartIndex = i + 1
-      break
-    }
-  }
-
-  if (portDetailsStartIndex > -1) {
-    let componentIndex = 0
-    for (let i = portDetailsStartIndex; i < data.length; i++) {
-      const row = data[i]
-      if (!row || row.length < 3) continue
-
-      const totalPorts = Number(row[0]) || 0
-      const usedPorts = Number(row[1]) || 0
-      const jsonDetails = String(row[2] || "{}")
-
-      if (totalPorts > 0 && componentIndex < result.components.length) {
-        const component = result.components[componentIndex]
-
-        // Only add port details to network devices and patch panels
-        if (["switch", "router", "firewall", "wireless-controller", "patch-panel"].includes(component.type)) {
-          component.specs = {
-            ...component.specs,
-            ports: totalPorts,
-            connections: usedPorts,
-          }
-
-          // Parse JSON port details
-          try {
-            const portDetails = JSON.parse(jsonDetails)
-            const portConnections: any[] = []
-
-            Object.entries(portDetails).forEach(([portRange, connection]) => {
-              if (portRange.includes("-")) {
-                // Handle port ranges like "1-20"
-                const [start, end] = portRange.split("-").map(Number)
-                for (let p = start; p <= end; p++) {
-                  portConnections.push({
-                    portNumber: p,
-                    isConnected: true,
-                    connectedTo: String(connection),
-                    status: "active",
-                  })
-                }
-              } else {
-                // Handle single ports
-                const portNum = Number(portRange)
-                if (portNum) {
-                  portConnections.push({
-                    portNumber: portNum,
-                    isConnected: true,
-                    connectedTo: String(connection),
-                    status: "active",
-                  })
-                }
-              }
-            })
-
-            // Fill remaining ports as inactive
-            for (let p = 1; p <= totalPorts; p++) {
-              if (!portConnections.find((pc) => pc.portNumber === p)) {
-                portConnections.push({
-                  portNumber: p,
-                  isConnected: false,
-                  status: "inactive",
-                })
-              }
-            }
-
-            component.specs.portDetails = portConnections.sort((a, b) => a.portNumber - b.portNumber)
-          } catch (e) {
-            console.warn("Error parsing JSON port details:", e)
-          }
-        }
-
-        componentIndex++
       }
     }
   }
@@ -407,9 +496,10 @@ export function convertExcelToRackComponents(excelData: ExcelCinemaData): any[] 
     position: comp.position,
     powerConsumption: comp.powerConsumption,
     specs: comp.specs,
-    description: `${comp.brand} ${comp.model} - ${comp.type.replace("-", " ").toUpperCase()}`,
+    description: `${comp.brand} ${comp.model} - ${comp.type.replace("-", " ").toUpperCase()}${comp.isUsed === false ? " (SIN USAR)" : ""}`,
     batteryInstallDate: comp.batteryInstallDate,
     batteryLifespan: comp.batteryLifespan,
+    isUsed: comp.isUsed,
   }))
 
   // Add patch panels based on patch panel ports data
@@ -429,6 +519,7 @@ export function convertExcelToRackComponents(excelData: ExcelCinemaData): any[] 
           portDetails: [],
         },
         description: `Panel de conexiones de ${port.totalPorts} puertos`,
+        isUsed: true,
       })
     }
   })
@@ -442,6 +533,7 @@ export function convertExcelToRackComponents(excelData: ExcelCinemaData): any[] 
         isConnected: port.isConnected,
         status: port.status,
         connectedTo: port.isConnected ? "Dispositivo conectado" : undefined,
+        description: port.isConnected ? "Puerto en uso" : "Puerto libre",
       })
 
       if (port.isConnected) {

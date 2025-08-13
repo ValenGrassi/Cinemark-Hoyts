@@ -4,7 +4,7 @@ export interface PortConnection {
   connectedTo?: string
   description?: string
   vlan?: string
-  status: 'active' | 'inactive' | 'error'
+  status: "active" | "inactive" | "error"
 }
 
 export interface UPSComponent {
@@ -15,7 +15,7 @@ export interface UPSComponent {
   capacityVA: number
   batteryInstallDate: string
   batteryLifespan: number // en meses
-  status: 'online' | 'offline' | 'warning' | 'maintenance'
+  status: "online" | "offline" | "warning" | "maintenance"
   batteryHealth: number // porcentaje
   loadPercentage: number
   estimatedRuntime: number // en minutos
@@ -24,10 +24,10 @@ export interface UPSComponent {
 
 export interface RackComponent {
   id: string
-  type: 'server' | 'patch-panel' | 'ups' | 'switch' | 'router' | 'firewall' | 'wireless-controller' | 'converter'
+  type: "server" | "patch-panel" | "ups" | "switch" | "router" | "firewall" | "wireless-controller" | "converter"
   name: string
   model?: string
-  status: 'online' | 'offline' | 'warning' | 'maintenance'
+  status: "online" | "offline" | "warning" | "maintenance"
   position: number
   powerConsumption: {
     min: number
@@ -51,6 +51,7 @@ export interface RackComponent {
   description?: string
   batteryInstallDate?: string
   batteryLifespan?: number
+  isUsed?: boolean
 }
 
 export interface Cinema {
