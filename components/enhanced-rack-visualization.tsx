@@ -168,7 +168,7 @@ export function EnhancedRackVisualization({ cinema, onComponentClick, selectedCo
         <rect 
           x="55" 
           y={yPos + 35} 
-          width={30 * (component.powerConsumption.current / component.powerConsumption.max)} 
+          width={component.powerConsumption} 
           height="4" 
           fill="#3b82f6" 
           rx="1" 
@@ -483,7 +483,7 @@ export function EnhancedRackVisualization({ cinema, onComponentClick, selectedCo
             fontSize="7"
             textAnchor="middle"
           >
-            {component.powerConsumption.current}W
+            {component.powerConsumption}W
           </text>
         )}
       </g>

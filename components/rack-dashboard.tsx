@@ -207,47 +207,28 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
 
                     {selectedComponent.type === 'ups' && selectedComponent.specs && (
                       <>
-                        {selectedComponent.specs.capacity && (
+                        {selectedComponent.capacityVA && (
                           <div className="flex items-center space-x-2">
                             <Zap className="h-4 w-4 text-gray-500" />
                             <div>
                               <p className="text-sm font-medium">Capacidad</p>
-                              <p className="text-xs text-gray-600">{selectedComponent.specs.capacity}</p>
+                              <p className="text-xs text-gray-600">{selectedComponent.capacityVA}VA</p>
                             </div>
                           </div>
                         )}
                         
-                        {selectedComponent.specs.batteryHealth !== undefined && (
-                          <div className="flex items-center space-x-2">
-                            <Battery className="h-4 w-4 text-gray-500" />
-                            <div>
-                              <p className="text-sm font-medium">Salud de Batería</p>
-                              <p className="text-xs text-gray-600">{selectedComponent.specs.batteryHealth}%</p>
-                            </div>
-                          </div>
-                        )}
 
-                        {selectedComponent.specs.loadPercentage !== undefined && (
+                        {selectedComponent.loadPercentage !== undefined && (
                           <div className="flex items-center space-x-2">
                             <div className="h-4 w-4 bg-blue-500 rounded-sm" />
                             <div>
                               <p className="text-sm font-medium">Carga</p>
-                              <p className="text-xs text-gray-600">{selectedComponent.specs.loadPercentage}%</p>
+                              <p className="text-xs text-gray-600">{selectedComponent.loadPercentage}%</p>
                             </div>
                           </div>
                         )}
 
-                        {selectedComponent.specs.estimatedRuntime !== undefined && (
-                          <div className="flex items-center space-x-2">
-                            <Clock className="h-4 w-4 text-gray-500" />
-                            <div>
-                              <p className="text-sm font-medium">Tiempo de Funcionamiento</p>
-                              <p className="text-xs text-gray-600">{selectedComponent.specs.estimatedRuntime} min</p>
-                            </div>
-                          </div>
-                        )}
-
-                        {selectedComponent.batteryInstallDate && selectedComponent.batteryLifespan && (
+                        {selectedComponent.batteryInstallDate && (
                           <div className="col-span-2">
                             <Separator className="mb-3" />
                             <div className="space-y-2">
@@ -260,14 +241,14 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
                                 <div>
                                   <p className="text-gray-500">Vida Útil Restante</p>
                                   <p className={`font-medium ${
-                                    isBatteryDueForReplacement(selectedComponent.batteryInstallDate, selectedComponent.batteryLifespan)
+                                    isBatteryDueForReplacement(selectedComponent.batteryInstallDate)
                                       ? 'text-red-600' : 'text-green-600'
                                   }`}>
-                                    {calculateBatteryRemainingLife(selectedComponent.batteryInstallDate, selectedComponent.batteryLifespan)} meses
+                                    {calculateBatteryRemainingLife(selectedComponent.batteryInstallDate)} meses
                                   </p>
                                 </div>
                               </div>
-                              {isBatteryDueForReplacement(selectedComponent.batteryInstallDate, selectedComponent.batteryLifespan) && (
+                              {isBatteryDueForReplacement(selectedComponent.batteryInstallDate) && (
                                 <div className="flex items-center gap-2 p-2 bg-red-50 rounded-md">
                                   <AlertTriangle className="h-4 w-4 text-red-600" />
                                   <p className="text-sm text-red-800">Se recomienda reemplazar la batería</p>
@@ -307,17 +288,12 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
                         <div className="space-y-2">
                           <h4 className="text-sm font-medium">Consumo de Energía</h4>
                           <div className="grid grid-cols-3 gap-4 text-xs">
-                            <div>
-                              <p className="text-gray-500">Mínimo</p>
-                              <p className="font-medium">{selectedComponent.powerConsumption.min}W</p>
-                            </div>
-                            <div>
-                              <p className="text-gray-500">Actual</p>
-                              <p className="font-medium text-blue-600">{selectedComponent.powerConsumption.current}W</p>
-                            </div>
-                            <div>
-                              <p className="text-gray-500">Máximo</p>
-                              <p className="font-medium">{selectedComponent.powerConsumption.max}W</p>
+                            <div className="flex items-center space-x-2">
+                              <Zap className="h-4 w-4 text-gray-600" />
+                              <div>
+                                <p className="text-gray-500">Total</p>
+                                <p className="font-semibold text-blue-600">{selectedComponent.powerConsumption}W</p>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -329,8 +305,8 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
             ) : (
               <Card>
                 <CardHeader>
-                  <CardTitle>Seleccionar un Componente</CardTitle>
-                  <CardDescription>Haz clic en cualquier servidor, panel de conexiones o UPS en el rack para ver sus detalles</CardDescription>
+                  <CardTitle>Seleccionar un Componente:</CardTitle>
+                  <CardDescription>Haz clic en cualquier router, switch, patchera o UPS en el rack para ver sus detalles.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="text-center py-8">
@@ -389,7 +365,7 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
               <CardContent>
                 <svg
                   width="100%"
-                  height={Math.max(400, 120 + (cinema.rackComponents.length * 55))}
+                  height={Math.max(400, 120 + (cinema.rackComponents.length * 60))}
                   viewBox={`0 0 300 ${Math.max(400, 120 + (cinema.rackComponents.length * 55))}`}
                   className="border border-gray-300 rounded-lg bg-gray-100"
                 >
@@ -398,44 +374,62 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
                     x="20"
                     y="20"
                     width="260"
-                    height={Math.max(360, 80 + (cinema.rackComponents.length * 55))}
+                    height={Math.max(360, 80 + (cinema.rackComponents.length * 60))}
                     fill="none"
                     stroke="#374151"
                     strokeWidth="3"
                   />
                   
                   {/* Rieles del Rack */}
-                  <rect x="30" y="30" width="10" height={Math.max(340, 60 + (cinema.rackComponents.length * 55))} fill="#6b7280" />
-                  <rect x="260" y="30" width="10" height={Math.max(340, 60 + (cinema.rackComponents.length * 55))} fill="#6b7280" />
+                  <rect x="30" y="30" width="10" height={Math.max(340, 60 + (cinema.rackComponents.length * 60))} fill="#6b7280" />
+                  <rect x="260" y="30" width="10" height={Math.max(340, 60 + (cinema.rackComponents.length * 60))} fill="#6b7280" />
                   
                   {/* Componentes */}
                   {cinema.rackComponents.map((component, index) => {
-                    const yPosition = 50 + (index * 55)
-                    const isServer = component.type === 'server'
-                    const isUPS = component.type === 'ups'
-                    const isNetworkDevice = ['switch', 'router', 'firewall', 'wireless-controller', 'converter'].includes(component.type)
-                    const isPatchPanel = component.type === 'patch-panel'
-                    
-                    return (
-                      <g key={component.id}>
-                        {/* Cuerpo del Componente */}
-                        <rect
-                          x="50"
-                          y={yPosition}
-                          width="200"
-                          height="50"
-                          fill={
-                            isServer ? '#1f2937' : 
-                            isUPS ? '#581c87' : 
-                            isNetworkDevice ? '#0f172a' :
-                            '#374151'
-                          }
-                          stroke={getStatusColor(component.status)}
-                          strokeWidth="2"
-                          rx="4"
-                          className="cursor-pointer hover:opacity-80 transition-opacity"
-                          onClick={() => handleComponentClick(component)}
-                        />
+  const ports = component.specs?.ports || 0
+
+  // Calcular filas necesarias
+  const rows = Math.ceil(ports / 12)
+
+  // Altura dinámica según filas
+  const baseHeight = 50
+  const componentHeight = baseHeight + (rows - 1) * 10 // +10 por cada fila extra
+
+  // yPosition dinámico sumando alturas de componentes anteriores
+  const yPosition = 50 + cinema.rackComponents
+    .slice(0, index)
+    .reduce((acc, c) => {
+      const cRows = Math.ceil((c.specs?.ports || 0) / 12)
+      const cHeight = baseHeight + (cRows - 1) * 10
+      return acc + cHeight + 5 // +5 margen entre componentes
+    }, 0)
+
+  const isServer = component.type === 'server'
+  const isUPS = component.type === 'ups'
+  const isNetworkDevice = ['switch', 'router', 'firewall', 'wireless-controller', 'converter'].includes(component.type)
+  const isPatchPanel = component.type === 'patch-panel'
+
+  return (
+    <g key={component.id}>
+      {/* Cuerpo del Componente */}
+      <rect
+        x="50"
+        y={yPosition}
+        width="200"
+        height={componentHeight}
+        fill={
+          isServer ? '#1f2937' : 
+          isUPS ? '#581c87' : 
+          isNetworkDevice ? '#0f172a' :
+          '#374151'
+        }
+        stroke={getStatusColor(component.status)}
+        strokeWidth="2"
+        rx="4"
+        className="cursor-pointer hover:opacity-80 transition-opacity"
+        onClick={() => handleComponentClick(component)}
+      />
+
                         
                         {/* LED de Estado */}
                         <circle
@@ -482,125 +476,75 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
                             onClick={() => handleComponentClick(component)}
                           />
                         )}
-                        
-                        {/* Detalles específicos del servidor */}
-                        {isServer && (
-                          <>
-                            {/* Botón de Encendido */}
-                            <rect
-                              x="220"
-                              y={yPosition + 10}
-                              width="15"
-                              height="8"
-                              fill={component.status === 'online' ? '#22c55e' : '#ef4444'}
-                              rx="2"
-                              className="cursor-pointer"
-                              onClick={() => handleComponentClick(component)}
-                            />
-                            
-                            {/* Bahías de Disco */}
-                            <rect x="200" y={yPosition + 25} width="8" height="4" fill="#4b5563" rx="1" />
-                            <rect x="210" y={yPosition + 25} width="8" height="4" fill="#4b5563" rx="1" />
-                          </>
-                        )}
-                        
-                        {/* Detalles específicos del UPS */}
-                        {isUPS && (
-                          <>
-                            {/* Indicador de batería */}
-                            <rect
-                              x="220"
-                              y={yPosition + 25}
-                              width="15"
-                              height="8"
-                              fill={component.batteryInstallDate && component.batteryLifespan 
-                                ? getBatteryStatusColor(component.batteryInstallDate, component.batteryLifespan)
-                                : '#6b7280'}
-                              rx="2"
-                              className="cursor-pointer"
-                              onClick={() => handleComponentClick(component)}
-                            />
-                            
-                            {/* Indicador de carga */}
-                            <rect
-                              x="200"
-                              y={yPosition + 25}
-                              width={Math.max(2, (component.specs?.loadPercentage || 0) * 0.15)}
-                              height="4"
-                              fill="#3b82f6"
-                              rx="1"
-                            />
-                          </>
-                        )}
-                        
+                                                
                         {/* Detalles de dispositivos de red (switches, routers, etc.) */}
-                        {isNetworkDevice && (
-                          <>
-                            {/* Indicadores de puerto pequeños debajo del texto */}
-                            {Array.from({ length: Math.min(component.specs?.ports || 8, 12) }).map((_, portIndex) => {
-                              const isConnected = portIndex < (component.specs?.connections || 0)
-                              return (
-                                <circle
-                                  key={portIndex}
-                                  cx={90 + (portIndex * 12)}
-                                  cy={yPosition + 42}
-                                  r="2"
-                                  fill={isConnected ? '#22c55e' : '#6b7280'}
-                                  className="cursor-pointer"
-                                  onClick={() => handleComponentClick(component)}
-                                />
-                              )
-                            })}
-                            
-                            {/* Puertos uplink especiales */}
-                            <rect
-                              x="220"
-                              y={yPosition + 38}
-                              width="6"
-                              height="8"
-                              fill="#3b82f6"
-                              rx="1"
-                              className="cursor-pointer"
-                              onClick={() => handleComponentClick(component)}
-                            />
-                            <rect
-                              x="230"
-                              y={yPosition + 38}
-                              width="6"
-                              height="8"
-                              fill="#3b82f6"
-                              rx="1"
-                              className="cursor-pointer"
-                              onClick={() => handleComponentClick(component)}
-                            />
-                          </>
-                        )}
+                          {isNetworkDevice && (
+                            <>
+                              {Array.from({ length: component.specs?.ports || 8 }).map((_, portIndex) => {
+                                const isConnected = portIndex < (component.specs?.connections || 0)
+
+                                const maxPerRow = 12
+                                const spacingX = 12
+                                const spacingY = 10
+
+                                const row = Math.floor(portIndex / maxPerRow)
+                                const col = portIndex % maxPerRow
+
+                                const cx = 87 + col * spacingX
+                                const cy = yPosition + 42 + row * spacingY
+
+                                return (
+                                  <circle
+                                    key={portIndex}
+                                    cx={cx}
+                                    cy={cy}
+                                    r="2"
+                                    fill={isConnected ? '#22c55e' : '#6b7280'}
+                                    className="cursor-pointer"
+                                    onClick={() => handleComponentClick(component)}
+                                  />
+                                )
+                              })}
+                            </>
+                          )}
                         
                         {/* Detalles específicos del Panel de Conexiones */}
                         {isPatchPanel && (
-                          <>
-                            {/* Indicadores de puerto pequeños debajo del texto */}
-                            {Array.from({ length: Math.min(component.specs?.ports || 24, 16) }).map((_, portIndex) => {
-                              const isConnected = portIndex < (component.specs?.connections || 0)
-                              return (
-                                <rect
-                                  key={portIndex}
-                                  x={90 + (portIndex * 8)}
-                                  y={yPosition + 40}
-                                  width="4"
-                                  height="4"
-                                  fill={isConnected ? '#22c55e' : '#6b7280'}
-                                  rx="1"
-                                  className="cursor-pointer"
-                                  onClick={() => handleComponentClick(component)}
-                                />
-                              )
-                            })}
-                          </>
-                        )}
+  <>
+    {/* Indicadores de puerto pequeños debajo del texto */}
+    {Array.from({ length: component.specs?.ports || 24 }).map((_, portIndex) => {
+      const isConnected = portIndex < (component.specs?.connections || 0)
+
+      const maxPerRow = 12
+      const spacingX = 12
+      const spacingY = 8
+
+      const row = Math.floor(portIndex / maxPerRow)
+      const col = portIndex % maxPerRow
+
+      const x = 85 + col * spacingX
+      const y = yPosition + 40 + row * spacingY // ajusta vertical por fila
+
+      return (
+        <rect
+          key={portIndex}
+          x={x}
+          y={y}
+          width="4"
+          height="4"
+          fill={isConnected ? '#22c55e' : '#6b7280'}
+          rx="1"
+          className="cursor-pointer"
+          onClick={() => handleComponentClick(component)}
+        />
+      )
+    })}
+  </>
+)}
+
                         
                         {/* Consumo de energía */}
-                        {component.powerConsumption && component.type !== 'ups' && (
+                        {component.powerConsumption && component.powerConsumption > 0 && component.type !== 'ups' && (
                           <text
                             x="240"
                             y={yPosition + 20}
@@ -608,7 +552,7 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
                             fontSize="6"
                             textAnchor="middle"
                           >
-                            {component.powerConsumption.current}W
+                            {component.powerConsumption}W
                           </text>
                         )}
                       </g>

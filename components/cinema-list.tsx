@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { AlertTriangle, MapPin, Calendar, Upload, Eye } from "lucide-react"
+import { AlertTriangle, MapPin, Calendar, Upload, Eye, SquarePen, LayoutGrid } from "lucide-react"
 import type { Cinema } from "../types/cinema"
 import { calculateBatteryRemainingLife, isBatteryDueForReplacement } from "../utils/battery-utils"
 import { ExcelUploader } from "./excel-uploader"
@@ -23,10 +23,13 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel, onCreateCin
   const [searchTerm, setSearchTerm] = useState("")
   const [showUploader, setShowUploader] = useState(false)
 
+  const normalizeText = (text: string) =>
+  text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+
   const filteredCinemas = cinemas.filter(
     (cinema) =>
-      cinema.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cinema.location.toLowerCase().includes(searchTerm.toLowerCase()),
+      normalizeText(cinema.name).includes(normalizeText(searchTerm)) ||
+      normalizeText(cinema.location).includes(normalizeText(searchTerm)),
   )
 
   const handleExcelUploadSuccess = (data: ExcelCinemaData) => {
@@ -108,6 +111,8 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel, onCreateCin
           <p className="text-gray-600 mt-2">Gestiona los racks de servidores en todas las ubicaciones de cines</p>
         </div>
 
+        <div className="flex gap-2">
+
         {/* Botón de Carga de Excel */}
         <Dialog open={showUploader} onOpenChange={setShowUploader}>
           <DialogTrigger asChild>
@@ -123,12 +128,20 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel, onCreateCin
             <ExcelUploader onUploadSuccess={handleExcelUploadSuccess} onClose={() => setShowUploader(false)} />
           </DialogContent>
         </Dialog>
+
+
+        <Button className="flex items-center gap-2 cursor-pointer">
+          Menú
+          <LayoutGrid className="h-7 w-7" />
+        </Button>
+      </div>
+
       </div>
 
       {/* Búsqueda */}
       <div className="max-w-md">
         <Input
-          placeholder="Buscar cines por nombre o ubicación..."
+          placeholder="Buscar cines por nombre..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -139,7 +152,7 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel, onCreateCin
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-blue-600">{cinemas.length}</div>
-            <div className="text-sm text-gray-600">Total de Ubicaciones</div>
+            <div className="text-sm text-gray-600">Total de Cines Cargados</div>
           </CardContent>
         </Card>
         <Card>
@@ -222,7 +235,7 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel, onCreateCin
                             <span
                               className={`px-2 py-1 rounded ${isDue ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}
                             >
-                              {remainingMonths}m restantes
+                              {remainingMonths} meses restantes
                             </span>
                           )}
                           <div
@@ -284,6 +297,14 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel, onCreateCin
                     <Calendar className="h-3 w-3" />
                     Actualizado {cinema.lastUpdated}
                   </div>
+                  <div className="flex gap-1"><Button
+                    size="sm"
+                    // onClick={}
+                    className="flex items-center gap-1 cursor-pointer"
+                  >
+                    <SquarePen className="h-3 w-3" />
+                    Editar
+                  </Button>
                   <Button
                     size="sm"
                     onClick={() => onSelectCinema(cinema)}
@@ -291,7 +312,7 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel, onCreateCin
                   >
                     <Eye className="h-3 w-3" />
                     Ver Rack
-                  </Button>
+                  </Button></div>
                 </div>
               </CardContent>
             </Card>

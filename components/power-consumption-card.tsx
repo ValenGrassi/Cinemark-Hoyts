@@ -51,15 +51,15 @@ export function PowerConsumptionCard({ cinema }: PowerConsumptionCardProps) {
           <div className="grid grid-cols-3 gap-2 text-xs text-gray-600">
             <div className="text-center">
               <div className="font-medium">Servidores</div>
-              <div>{cinema.rackComponents.filter(c => c.type === 'server').reduce((sum, c) => sum + c.powerConsumption.current, 0)}W</div>
+              <div>{cinema.rackComponents.filter(c => c.type === 'server').reduce((sum, c) => sum + c.powerConsumption, 0)}W</div>
             </div>
             <div className="text-center">
               <div className="font-medium">Red</div>
-              <div>{cinema.rackComponents.filter(c => ['switch', 'router', 'firewall'].includes(c.type)).reduce((sum, c) => sum + c.powerConsumption.current, 0)}W</div>
+              <div>{cinema.rackComponents.filter(c => ['switch', 'router', 'firewall'].includes(c.type)).reduce((sum, c) => sum + c.powerConsumption, 0)}W</div>
             </div>
             <div className="text-center">
               <div className="font-medium">Otros</div>
-              <div>{cinema.rackComponents.filter(c => !['server', 'switch', 'router', 'firewall', 'ups'].includes(c.type)).reduce((sum, c) => sum + c.powerConsumption.current, 0)}W</div>
+              <div>{cinema.rackComponents.filter(c => !['server', 'switch', 'router', 'firewall', 'ups'].includes(c.type)).reduce((sum, c) => sum + c.powerConsumption, 0)}W</div>
             </div>
           </div>
         </div>

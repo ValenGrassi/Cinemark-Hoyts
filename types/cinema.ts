@@ -3,23 +3,6 @@ export interface PortConnection {
   isConnected: boolean
   connectedTo?: string
   description?: string
-  vlan?: string
-  status: "active" | "inactive" | "error"
-}
-
-export interface UPSComponent {
-  id: string
-  name: string
-  model: string
-  capacity: string
-  capacityVA: number
-  batteryInstallDate: string
-  batteryLifespan: number // en meses
-  status: "online" | "offline" | "warning" | "maintenance"
-  batteryHealth: number // porcentaje
-  loadPercentage: number
-  estimatedRuntime: number // en minutos
-  estimatedAutonomyHours: number // horas de autonomía estimada
 }
 
 export interface RackComponent {
@@ -29,29 +12,19 @@ export interface RackComponent {
   model?: string
   status: "online" | "offline" | "warning" | "maintenance"
   position: number
-  powerConsumption: {
-    min: number
-    max: number
-    current: number
-  }
+  powerConsumption?: number
   specs?: {
     cpu?: string
     ram?: string
     storage?: string
-    temperature?: number
-    powerUsage?: number
     ports?: number
     connections?: number
-    capacity?: string
-    batteryHealth?: number
-    loadPercentage?: number
-    estimatedRuntime?: number
     portDetails?: PortConnection[]
   }
+  loadPercentage?: number
   description?: string
   batteryInstallDate?: string
-  batteryLifespan?: number
-  isUsed?: boolean
+  capacityVA?: number
 }
 
 export interface Cinema {
@@ -61,8 +34,8 @@ export interface Cinema {
   address: string
   rackComponents: RackComponent[]
   lastUpdated: string
-  upsWarnings: number
   totalPowerConsumption: number
   upsAutonomyHours: number
   upsCapacityVA: number
+  generator: boolean
 }

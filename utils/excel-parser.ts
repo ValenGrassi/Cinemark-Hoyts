@@ -23,11 +23,7 @@ export interface ParsedComponent {
   brand?: string
   status: "online" | "offline" | "warning" | "maintenance"
   position: number
-  powerConsumption: {
-    min: number
-    max: number
-    current: number
-  }
+  powerConsumption: number
   specs?: {
     cpu?: string
     ram?: string
@@ -58,7 +54,6 @@ export function parseExcelFile(file: File): Promise<ExcelCinemaData> {
         const workbook = XLSX.read(data, { type: "array" })
         const worksheet = workbook.Sheets[workbook.SheetNames[0]]
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 })
-
         const parsedData = parseExcelData(jsonData as any[][])
         resolve(parsedData)
       } catch (error) {
@@ -310,11 +305,7 @@ function parseExcelData(data: any[][]): ExcelCinemaData {
         status: isUsed ? ("online" as const) : ("maintenance" as const),
         position,
         isUsed,
-        powerConsumption: {
-          min: Math.floor(consumption * 0.7),
-          max: Math.floor(consumption * 1.3),
-          current: consumption,
-        },
+        powerConsumption: consumption,
         specs: {
           powerUsage: consumption,
         },
@@ -512,7 +503,7 @@ export function convertExcelToRackComponents(excelData: ExcelCinemaData): any[] 
         name: `Panel de Conexiones ${port.patchPanelId}`,
         status: "online",
         position: components.length + patchPanels.size + 1,
-        powerConsumption: { min: 0, max: 0, current: 0 },
+        powerConsumption: 0,
         specs: {
           ports: port.totalPorts,
           connections: 0,

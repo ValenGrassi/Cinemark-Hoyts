@@ -1,6 +1,6 @@
 import { Cinema, PortConnection } from '../types/cinema'
 
-// Detalles de puertos para switches y patch panels
+// Función para generar detalles de puertos
 const createPortDetails = (totalPorts: number, connections: { [key: number]: string }): PortConnection[] => {
   return Array.from({ length: totalPorts }, (_, index) => {
     const portNumber = index + 1
@@ -9,8 +9,7 @@ const createPortDetails = (totalPorts: number, connections: { [key: number]: str
       portNumber,
       isConnected: !!connectedTo,
       connectedTo,
-      description: connectedTo ? `Conectado a ${connectedTo}` : 'Puerto libre',
-      status: connectedTo ? 'active' : 'inactive'
+      description: connectedTo ? `Conectado a ${connectedTo}` : 'Puerto libre'
     }
   })
 }
@@ -22,10 +21,10 @@ export const sampleCinemas: Cinema[] = [
     location: 'Malvinas Argentinas',
     address: 'Av. Presidente Perón 2500, Malvinas Argentinas, Buenos Aires',
     lastUpdated: '2024-01-08',
-    upsWarnings: 0,
     totalPowerConsumption: 775,
     upsAutonomyHours: 6,
     upsCapacityVA: 10000,
+    generator: false,
     rackComponents: [
       {
         id: 'quidway-3308',
@@ -34,7 +33,7 @@ export const sampleCinemas: Cinema[] = [
         model: 'Quidway 3308',
         status: 'online',
         position: 1,
-        powerConsumption: { min: 20, max: 30, current: 25 },
+        powerConsumption: 25,
         specs: {
           ports: 24,
           connections: 18,
@@ -42,148 +41,10 @@ export const sampleCinemas: Cinema[] = [
             1: 'Servidor de Proyección 01',
             2: 'Servidor de Audio',
             3: 'Cisco C8200 4T',
-            4: 'Cisco FPR1000',
-            5: 'HP ProLiant DL360',
-            6: 'Cisco Catalyst 2960',
-            7: 'Wireless Controller 2500',
-            8: 'Cisco Catalyst 1000 #1',
-            9: 'Cisco Catalyst 1000 #2',
-            10: 'Huawei AR 651 #1',
-            11: 'Huawei AR 651 #2',
-            12: 'Cisco SF220 24Port',
-            13: 'Fibercorp Converter',
-            14: 'Cámara IP Sala 1',
-            15: 'Cámara IP Sala 2',
-            16: 'Cámara IP Lobby',
-            17: 'Sistema POS',
-            18: 'Backup Server'
+            4: 'Cisco FPR1000'
           })
         },
         description: 'Switch principal de distribución de red'
-      },
-      {
-        id: 'cisco-c8200',
-        type: 'router',
-        name: 'Cisco C8200 4T',
-        model: 'C8200-1N-4T',
-        status: 'online',
-        position: 2,
-        powerConsumption: { min: 30, max: 50, current: 40 },
-        specs: {
-          ports: 4,
-          connections: 2,
-          portDetails: createPortDetails(4, {
-            1: 'ISP Principal - Fibra',
-            2: 'ISP Backup - ADSL'
-          })
-        },
-        description: 'Router principal de conectividad a Internet'
-      },
-      {
-        id: 'cisco-fpr1000',
-        type: 'firewall',
-        name: 'Cisco FPR1000 Series',
-        model: 'FPR1010',
-        status: 'online',
-        position: 3,
-        powerConsumption: { min: 15, max: 30, current: 22 },
-        specs: {
-          ports: 8,
-          connections: 4,
-          portDetails: createPortDetails(8, {
-            1: 'WAN - Cisco C8200',
-            2: 'LAN - Quidway 3308',
-            3: 'DMZ - Servidor Web',
-            4: 'Management - VLAN Admin'
-          })
-        },
-        description: 'Firewall de seguridad perimetral'
-      },
-      {
-        id: 'cisco-catalyst-2960',
-        type: 'switch',
-        name: 'Cisco Catalyst 2960 Series',
-        model: 'WS-C2960-24TT-L',
-        status: 'online',
-        position: 4,
-        powerConsumption: { min: 30, max: 50, current: 40 },
-        specs: {
-          ports: 24,
-          connections: 20,
-          portDetails: createPortDetails(24, {
-            1: 'Proyector Digital Sala 1',
-            2: 'Proyector Digital Sala 2',
-            3: 'Proyector Digital Sala 3',
-            4: 'Sistema Audio Sala 1',
-            5: 'Sistema Audio Sala 2',
-            6: 'Sistema Audio Sala 3',
-            7: 'Servidor de Medios',
-            8: 'Sistema de Ticketing',
-            9: 'POS Terminal 1',
-            10: 'POS Terminal 2',
-            11: 'POS Terminal 3',
-            12: 'Sistema de Iluminación',
-            13: 'Sistema HVAC',
-            14: 'Cámara IP Sala 4',
-            15: 'Cámara IP Sala 5',
-            16: 'Access Point Lobby',
-            17: 'Access Point Salas',
-            18: 'Sistema de Emergencia',
-            19: 'Servidor de Backup',
-            20: 'Sistema de Monitoreo'
-          })
-        },
-        description: 'Switch para equipos de salas de cine'
-      },
-      {
-        id: 'wireless-controller-2500',
-        type: 'wireless-controller',
-        name: 'Cisco 2500 Wireless Controller',
-        model: 'AIR-CT2504-5-K9',
-        status: 'online',
-        position: 5,
-        powerConsumption: { min: 40, max: 70, current: 55 },
-        specs: {
-          ports: 4,
-          connections: 3,
-          portDetails: createPortDetails(4, {
-            1: 'Management - VLAN 100',
-            2: 'AP Trunk - VLAN 200-210',
-            3: 'Guest Network - VLAN 300'
-          })
-        },
-        description: 'Controlador para puntos de acceso inalámbricos'
-      },
-      {
-        id: '3com-baseline-2226',
-        type: 'switch',
-        name: '3Com Baseline Switch 2226',
-        model: '3CBLSF26',
-        status: 'online',
-        position: 6,
-        powerConsumption: { min: 20, max: 30, current: 25 },
-        specs: {
-          ports: 26,
-          connections: 15,
-          portDetails: createPortDetails(26, {
-            1: 'Impresora Tickets 1',
-            2: 'Impresora Tickets 2',
-            3: 'Scanner Códigos QR',
-            4: 'Terminal Autoservicio 1',
-            5: 'Terminal Autoservicio 2',
-            6: 'Sistema Sonido Lobby',
-            7: 'Pantalla Información 1',
-            8: 'Pantalla Información 2',
-            9: 'Sistema Control Acceso',
-            10: 'Cámara IP Entrada',
-            11: 'Cámara IP Salida',
-            12: 'Sistema Alarma',
-            13: 'UPS Management',
-            14: 'Servidor NTP',
-            15: 'Sistema Backup Red'
-          })
-        },
-        description: 'Switch para dispositivos auxiliares y periféricos'
       },
       {
         id: 'hp-proliant-dl360',
@@ -192,150 +53,13 @@ export const sampleCinemas: Cinema[] = [
         model: 'DL360 Gen10',
         status: 'online',
         position: 7,
-        powerConsumption: { min: 200, max: 350, current: 275 },
+        powerConsumption: 275,
         specs: {
           cpu: '2x Intel Xeon Silver 4214R',
           ram: '64GB DDR4 ECC',
-          storage: '4x 1TB NVMe SSD RAID 10',
-          temperature: 42,
-          powerUsage: 275
+          storage: '4x 1TB NVMe SSD RAID 10'
         },
         description: 'Servidor principal para aplicaciones críticas del cine'
-      },
-      {
-        id: 'cisco-catalyst-1000-1',
-        type: 'switch',
-        name: 'Cisco Catalyst 1000 Series #1',
-        model: 'C1000-24T-4G-L',
-        status: 'online',
-        position: 8,
-        powerConsumption: { min: 20, max: 40, current: 30 },
-        specs: {
-          ports: 24,
-          connections: 12,
-          portDetails: createPortDetails(24, {
-            1: 'Cámara IP Estacionamiento 1',
-            2: 'Cámara IP Estacionamiento 2',
-            3: 'Cámara IP Estacionamiento 3',
-            4: 'Cámara IP Perímetro 1',
-            5: 'Cámara IP Perímetro 2',
-            6: 'Sistema Control Barreras',
-            7: 'Sensor Movimiento 1',
-            8: 'Sensor Movimiento 2',
-            9: 'Iluminación Exterior',
-            10: 'Sistema Riego',
-            11: 'Sensor Temperatura Ext',
-            12: 'Sistema Emergencia Ext'
-          })
-        },
-        description: 'Switch para sistemas exteriores y seguridad'
-      },
-      {
-        id: 'cisco-catalyst-1000-2',
-        type: 'switch',
-        name: 'Cisco Catalyst 1000 Series #2',
-        model: 'C1000-24T-4G-L',
-        status: 'online',
-        position: 9,
-        powerConsumption: { min: 20, max: 40, current: 30 },
-        specs: {
-          ports: 24,
-          connections: 10,
-          portDetails: createPortDetails(24, {
-            1: 'Sistema HVAC Sala 1',
-            2: 'Sistema HVAC Sala 2',
-            3: 'Sistema HVAC Sala 3',
-            4: 'Control Iluminación Salas',
-            5: 'Sistema Audio Lobby',
-            6: 'Pantalla LED Exterior',
-            7: 'Sistema Intercomunicador',
-            8: 'Control Temperatura',
-            9: 'Sistema Ventilación',
-            10: 'Backup HVAC'
-          })
-        },
-        description: 'Switch para sistemas de climatización y control'
-      },
-      {
-        id: 'huawei-ar651-1',
-        type: 'router',
-        name: 'Huawei NetEngine AR 651 #1',
-        model: 'AR651-X8',
-        status: 'online',
-        position: 10,
-        powerConsumption: { min: 15, max: 25, current: 20 },
-        specs: {
-          ports: 8,
-          connections: 4,
-          portDetails: createPortDetails(8, {
-            1: 'MPLS Link Principal',
-            2: 'Backup Link ADSL',
-            3: 'VPN Oficina Central',
-            4: 'Management VLAN'
-          })
-        },
-        description: 'Router para conectividad MPLS y VPN'
-      },
-      {
-        id: 'huawei-ar651-2',
-        type: 'router',
-        name: 'Huawei NetEngine AR 651 #2',
-        model: 'AR651-X8',
-        status: 'online',
-        position: 11,
-        powerConsumption: { min: 15, max: 25, current: 20 },
-        specs: {
-          ports: 8,
-          connections: 3,
-          portDetails: createPortDetails(8, {
-            1: 'Backup MPLS Link',
-            2: 'Site-to-Site VPN',
-            3: 'Remote Management'
-          })
-        },
-        description: 'Router de respaldo para redundancia'
-      },
-      {
-        id: 'cisco-sf220-24',
-        type: 'switch',
-        name: 'Cisco SF220 24Port',
-        model: 'SF220-24-K9',
-        status: 'online',
-        position: 12,
-        powerConsumption: { min: 15, max: 25, current: 20 },
-        specs: {
-          ports: 24,
-          connections: 8,
-          portDetails: createPortDetails(24, {
-            1: 'Teléfono IP Recepción',
-            2: 'Teléfono IP Gerencia',
-            3: 'Teléfono IP Técnico',
-            4: 'Sistema Paging',
-            5: 'Fax IP',
-            6: 'Sistema Conferencia',
-            7: 'Grabadora Llamadas',
-            8: 'Gateway VoIP'
-          })
-        },
-        description: 'Switch dedicado para telefonía IP'
-      },
-      {
-        id: 'fibercorp-converter',
-        type: 'converter',
-        name: 'Fibercorp (conversor fibra)',
-        model: 'FC-MC-1000',
-        status: 'online',
-        position: 13,
-        powerConsumption: { min: 5, max: 10, current: 7 },
-        specs: {
-          ports: 2,
-          connections: 2,
-          portDetails: createPortDetails(2, {
-            1: 'Fibra Óptica - ISP',
-            2: 'Ethernet - Router'
-          })
-        },
-        description: 'Conversor de medios fibra óptica a ethernet'
       },
       {
         id: 'ups-main-10kva',
@@ -344,16 +68,11 @@ export const sampleCinemas: Cinema[] = [
         model: 'APC Smart-UPS SRT 10kVA',
         status: 'online',
         position: 14,
-        powerConsumption: { min: 0, max: 0, current: 0 },
-        specs: {
-          capacity: '10000VA / 10000W',
-          batteryHealth: 95,
-          loadPercentage: 8, // 775W / 10000VA = ~8%
-          estimatedRuntime: 360 // 6 horas en minutos
-        },
+        specs: {},
         description: 'UPS principal con autonomía de 5-7 horas',
         batteryInstallDate: '2023-08-15',
-        batteryLifespan: 60 // UPS de alta capacidad duran más
+        capacityVA: 10000,
+        loadPercentage: 8
       }
     ]
   },
@@ -363,10 +82,10 @@ export const sampleCinemas: Cinema[] = [
     location: 'Moreno',
     address: 'Av. Victorica 1234, Moreno, Buenos Aires',
     lastUpdated: '2024-01-08',
-    upsWarnings: 2,
     totalPowerConsumption: 485,
     upsAutonomyHours: 2.8,
     upsCapacityVA: 3000,
+    generator: false,
     rackComponents: [
       {
         id: 'server-1',
@@ -374,13 +93,11 @@ export const sampleCinemas: Cinema[] = [
         name: 'Servidor de Proyección 01',
         status: 'online',
         position: 1,
-        powerConsumption: { min: 150, max: 200, current: 180 },
+        powerConsumption: 180,
         specs: {
           cpu: 'Intel Xeon E5-2680 v4',
           ram: '64GB DDR4',
-          storage: '4TB NVMe SSD',
-          temperature: 42,
-          powerUsage: 180
+          storage: '4TB NVMe SSD'
         },
         description: 'Servidor principal de proyección digital de cine'
       },
@@ -388,18 +105,14 @@ export const sampleCinemas: Cinema[] = [
         id: 'ups-1',
         type: 'ups',
         name: 'UPS Alimentación Principal',
+        model: 'APC Smart-UPS 3000',
         status: 'warning',
         position: 2,
-        powerConsumption: { min: 0, max: 0, current: 0 },
-        specs: {
-          capacity: '3000VA / 2700W',
-          batteryHealth: 75,
-          loadPercentage: 45,
-          estimatedRuntime: 25
-        },
+        specs: {},
         description: 'UPS principal para equipos críticos del cine',
         batteryInstallDate: '2022-03-15',
-        batteryLifespan: 36
+        capacityVA: 3000,
+        loadPercentage: 70
       },
       {
         id: 'server-2',
@@ -407,67 +120,26 @@ export const sampleCinemas: Cinema[] = [
         name: 'Servidor de Audio',
         status: 'online',
         position: 3,
-        powerConsumption: { min: 120, max: 180, current: 150 },
+        powerConsumption: 150,
         specs: {
           cpu: 'AMD EPYC 7542',
           ram: '32GB DDR4',
-          storage: '2TB SSD',
-          temperature: 38,
-          powerUsage: 150
+          storage: '2TB SSD'
         },
         description: 'Servidor de procesamiento de audio Dolby Atmos'
-      },
-      {
-        id: 'patch-1',
-        type: 'patch-panel',
-        name: 'Panel de Conexiones de Red',
-        status: 'online',
-        position: 4,
-        powerConsumption: { min: 0, max: 0, current: 0 },
-        specs: {
-          ports: 24,
-          connections: 20,
-          portDetails: createPortDetails(24, {
-            1: 'Servidor Proyección',
-            2: 'Servidor Audio',
-            3: 'Switch Principal',
-            4: 'Router ISP',
-            5: 'Proyector Sala 1',
-            6: 'Proyector Sala 2',
-            7: 'Sistema Audio Sala 1',
-            8: 'Sistema Audio Sala 2',
-            9: 'POS Terminal 1',
-            10: 'POS Terminal 2',
-            11: 'Cámara IP 1',
-            12: 'Cámara IP 2',
-            13: 'Access Point 1',
-            14: 'Access Point 2',
-            15: 'Sistema HVAC',
-            16: 'Iluminación',
-            17: 'Sistema Alarma',
-            18: 'Backup Server',
-            19: 'Management',
-            20: 'UPS Network'
-          })
-        },
-        description: 'Panel de conexiones de 24 puertos para equipos del cine'
       },
       {
         id: 'ups-2',
         type: 'ups',
         name: 'UPS Secundario',
+        model: 'APC Smart-UPS 1500',
         status: 'warning',
         position: 5,
-        powerConsumption: { min: 0, max: 0, current: 0 },
-        specs: {
-          capacity: '1500VA / 1350W',
-          batteryHealth: 65,
-          loadPercentage: 60,
-          estimatedRuntime: 15
-        },
+        specs: {},
         description: 'UPS secundario para equipos de red',
         batteryInstallDate: '2022-01-10',
-        batteryLifespan: 36
+        capacityVA: 1500,
+        loadPercentage: 80
       }
     ]
   },
@@ -477,10 +149,10 @@ export const sampleCinemas: Cinema[] = [
     location: 'Morón',
     address: 'Av. Rivadavia 5678, Morón, Buenos Aires',
     lastUpdated: '2024-01-08',
-    upsWarnings: 1,
     totalPowerConsumption: 520,
     upsAutonomyHours: 2.1,
     upsCapacityVA: 2200,
+    generator: false,
     rackComponents: [
       {
         id: 'server-1',
@@ -488,13 +160,11 @@ export const sampleCinemas: Cinema[] = [
         name: 'Servidor de Proyección 01',
         status: 'online',
         position: 1,
-        powerConsumption: { min: 140, max: 180, current: 160 },
+        powerConsumption: 160,
         specs: {
           cpu: 'Intel Xeon Silver 4214',
           ram: '32GB DDR4',
-          storage: '2TB NVMe SSD',
-          temperature: 40,
-          powerUsage: 160
+          storage: '2TB NVMe SSD'
         },
         description: 'Servidor de proyección digital de cine'
       },
@@ -502,18 +172,14 @@ export const sampleCinemas: Cinema[] = [
         id: 'ups-1',
         type: 'ups',
         name: 'UPS Alimentación Principal',
+        model: 'APC Smart-UPS 2200',
         status: 'online',
         position: 2,
-        powerConsumption: { min: 0, max: 0, current: 0 },
-        specs: {
-          capacity: '2200VA / 1980W',
-          batteryHealth: 85,
-          loadPercentage: 35,
-          estimatedRuntime: 30
-        },
+        specs: {},
         description: 'UPS principal para equipos del cine',
         batteryInstallDate: '2023-06-20',
-        batteryLifespan: 36
+        capacityVA: 2200,
+        loadPercentage: 35
       },
       {
         id: 'server-2',
@@ -521,13 +187,11 @@ export const sampleCinemas: Cinema[] = [
         name: 'Servidor de Medios',
         status: 'online',
         position: 3,
-        powerConsumption: { min: 180, max: 220, current: 200 },
+        powerConsumption: 200,
         specs: {
           cpu: 'Intel Core i7-10700K',
           ram: '64GB DDR4',
-          storage: '8TB HDD RAID',
-          temperature: 45,
-          powerUsage: 200
+          storage: '8TB HDD RAID'
         },
         description: 'Servidor de almacenamiento y streaming de medios'
       },
@@ -535,18 +199,14 @@ export const sampleCinemas: Cinema[] = [
         id: 'ups-2',
         type: 'ups',
         name: 'UPS de Red',
+        model: 'APC Smart-UPS 1000',
         status: 'warning',
         position: 4,
-        powerConsumption: { min: 0, max: 0, current: 0 },
-        specs: {
-          capacity: '1000VA / 900W',
-          batteryHealth: 70,
-          loadPercentage: 50,
-          estimatedRuntime: 20
-        },
+        specs: {},
         description: 'UPS para equipos de red y auxiliares',
         batteryInstallDate: '2022-08-15',
-        batteryLifespan: 36
+        capacityVA: 1000,
+        loadPercentage: 50
       }
     ]
   },
@@ -556,10 +216,10 @@ export const sampleCinemas: Cinema[] = [
     location: 'San Martín',
     address: 'Av. San Martín 9012, San Martín, Buenos Aires',
     lastUpdated: '2024-01-08',
-    upsWarnings: 0,
     totalPowerConsumption: 280,
     upsAutonomyHours: 4.5,
     upsCapacityVA: 3000,
+    generator: true,
     rackComponents: [
       {
         id: 'server-1',
@@ -567,13 +227,11 @@ export const sampleCinemas: Cinema[] = [
         name: 'Servidor de Proyección 01',
         status: 'online',
         position: 1,
-        powerConsumption: { min: 120, max: 160, current: 140 },
+        powerConsumption: 140,
         specs: {
           cpu: 'AMD Ryzen 9 5900X',
           ram: '32GB DDR4',
-          storage: '1TB NVMe SSD',
-          temperature: 35,
-          powerUsage: 140
+          storage: '1TB NVMe SSD'
         },
         description: 'Servidor de proyección de última generación'
       },
@@ -581,18 +239,185 @@ export const sampleCinemas: Cinema[] = [
         id: 'ups-1',
         type: 'ups',
         name: 'UPS Alimentación Principal',
+        model: 'APC Smart-UPS 3000',
         status: 'online',
         position: 2,
-        powerConsumption: { min: 0, max: 0, current: 0 },
-        specs: {
-          capacity: '3000VA / 2700W',
-          batteryHealth: 95,
-          loadPercentage: 40,
-          estimatedRuntime: 35
-        },
+        specs: {},
         description: 'Nuevo sistema UPS principal',
         batteryInstallDate: '2023-11-01',
-        batteryLifespan: 36
+        capacityVA: 3000,
+        loadPercentage: 40
+      }
+    ]
+  },
+  {
+    id: 'palermo',
+    name: 'Cine Palermo',
+    location: 'Palermo',
+    address: 'Av. Santa Fe 1234, Palermo, Buenos Aires',
+    lastUpdated: '2025-08-15',
+    totalPowerConsumption: 1200,
+    upsAutonomyHours: 5,
+    upsCapacityVA: 15000,
+    generator: true,
+    rackComponents: [
+      {
+        id: 'switch-core-1',
+        type: 'switch',
+        name: 'Switch Core 48p',
+        model: 'Cisco Catalyst 9500',
+        status: 'online',
+        position: 1,
+        powerConsumption: 50,
+        specs: {
+          ports: 48,
+          connections: 36,
+          portDetails: createPortDetails(48, {
+            1: 'Servidor Cine 01',
+            2: 'Servidor Cine 02',
+            3: 'Router Principal',
+            4: 'Patch Panel 1',
+            5: 'Patch Panel 2',
+            6: 'Switch Sala 1',
+            7: 'Switch Sala 2',
+            8: 'Switch Sala 3'
+          })
+        },
+        description: 'Switch core que conecta todas las salas y servidores'
+      },
+      {
+        id: 'patch-panel-1',
+        type: 'patch-panel',
+        name: 'Patch Panel Principal 48p',
+        status: 'online',
+        position: 2,
+        powerConsumption: 0,
+        specs: {
+          ports: 48,
+          connections: 24,
+          portDetails: createPortDetails(48, {
+            1: 'Switch Core 48p',
+            2: 'Switch Sala 1',
+            3: 'Switch Sala 2',
+            4: 'Switch Sala 3',
+            5: 'Servidor Cine 01'
+          })
+        },
+        description: 'Patch panel principal del rack'
+      },
+      {
+        id: 'server-1',
+        type: 'server',
+        name: 'Servidor Cine 01',
+        model: 'HP DL380 Gen10',
+        status: 'online',
+        position: 3,
+        powerConsumption: 300,
+        specs: {
+          cpu: '2x Intel Xeon Gold 5218',
+          ram: '128GB DDR4 ECC',
+          storage: '8x 2TB NVMe SSD RAID10'
+        },
+        description: 'Servidor principal de proyección y aplicaciones del cine'
+      },
+      {
+        id: 'server-2',
+        type: 'server',
+        name: 'Servidor Cine 02',
+        model: 'Dell PowerEdge R740',
+        status: 'online',
+        position: 4,
+        powerConsumption: 280,
+        specs: {
+          cpu: '2x Intel Xeon Silver 4210',
+          ram: '64GB DDR4 ECC',
+          storage: '4x 2TB NVMe SSD'
+        },
+        description: 'Servidor de medios y streaming'
+      },
+      {
+        id: 'router-1',
+        type: 'router',
+        name: 'Router Principal',
+        model: 'Cisco ISR 4331',
+        status: 'online',
+        position: 5,
+        powerConsumption: 40,
+        specs: {
+          ports: 8,
+          connections: 4,
+          portDetails: createPortDetails(8, {
+            1: 'Switch Core 48p',
+            2: 'ISP Fiber 01'
+          })
+        },
+        description: 'Router principal del cine'
+      },
+      {
+        id: 'ups-main-15kva',
+        type: 'ups',
+        name: 'UPS Principal 15kVA',
+        model: 'APC Smart-UPS SRT 15kVA',
+        status: 'online',
+        position: 6,
+        specs: {},
+        description: 'UPS principal con autonomía de 5 horas',
+        batteryInstallDate: '2024-01-10',
+        capacityVA: 15000
+      },
+      {
+        id: 'switch-sala-1',
+        type: 'switch',
+        name: 'Switch Sala 1',
+        model: 'Cisco Catalyst 2960',
+        status: 'online',
+        position: 7,
+        powerConsumption: 15,
+        specs: {
+          ports: 24,
+          connections: 12,
+          portDetails: createPortDetails(24, {
+            1: 'Proyector Sala 1',
+            2: 'Audio Sala 1'
+          })
+        },
+        description: 'Switch dedicado a Sala 1'
+      },
+      {
+        id: 'switch-sala-2',
+        type: 'switch',
+        name: 'Switch Sala 2',
+        model: 'Cisco Catalyst 2960',
+        status: 'online',
+        position: 8,
+        powerConsumption: 15,
+        specs: {
+          ports: 24,
+          connections: 12,
+          portDetails: createPortDetails(24, {
+            1: 'Proyector Sala 2',
+            2: 'Audio Sala 2'
+          })
+        },
+        description: 'Switch dedicado a Sala 2'
+      },
+      {
+        id: 'switch-sala-3',
+        type: 'switch',
+        name: 'Switch Sala 3',
+        model: 'Cisco Catalyst 2960',
+        status: 'online',
+        position: 9,
+        powerConsumption: 15,
+        specs: {
+          ports: 24,
+          connections: 12,
+          portDetails: createPortDetails(24, {
+            1: 'Proyector Sala 3',
+            2: 'Audio Sala 3'
+          })
+        },
+        description: 'Switch dedicado a Sala 3'
       }
     ]
   }

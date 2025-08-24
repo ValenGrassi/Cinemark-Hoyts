@@ -1,7 +1,7 @@
 export function calculateTotalPowerConsumption(components: any[]): number {
   return components.reduce((total, component) => {
     if (component.type !== 'ups') {
-      return total + (component.powerConsumption?.current || 0)
+      return total + (component.powerConsumption || 0)
     }
     return total
   }, 0)
