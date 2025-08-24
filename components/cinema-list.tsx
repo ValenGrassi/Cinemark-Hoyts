@@ -6,7 +6,25 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { AlertTriangle, MapPin, Calendar, Upload, Eye, SquarePen, LayoutGrid } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  AlertTriangle,
+  MapPin,
+  Calendar,
+  Upload,
+  Eye,
+  SquarePen,
+  LayoutGrid,
+  User,
+  LogOut,
+  FileText,
+} from "lucide-react"
 import type { Cinema } from "../types/cinema"
 import { calculateBatteryRemainingLife, isBatteryDueForReplacement } from "../utils/battery-utils"
 import { ExcelUploader } from "./excel-uploader"
@@ -15,16 +33,30 @@ import { type ExcelCinemaData, convertExcelToRackComponents } from "../utils/exc
 interface CinemaListProps {
   cinemas: Cinema[]
   onSelectCinema: (cinema: Cinema) => void
+  onEditCinema: (cinema: Cinema) => void
   onUploadExcel: (file: File, cinemaId?: string) => void
   onCreateCinema: (cinemaData: Cinema) => void
+  onNavigateToLogs: () => void
+  onLogout: () => void
 }
 
-export function CinemaList({ cinemas, onSelectCinema, onUploadExcel, onCreateCinema }: CinemaListProps) {
+export function CinemaList({
+  cinemas,
+  onSelectCinema,
+  onEditCinema,
+  onUploadExcel,
+  onCreateCinema,
+  onNavigateToLogs,
+  onLogout,
+}: CinemaListProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [showUploader, setShowUploader] = useState(false)
 
   const normalizeText = (text: string) =>
-  text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+    text
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
 
   const filteredCinemas = cinemas.filter(
     (cinema) =>
@@ -112,30 +144,55 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel, onCreateCin
         </div>
 
         <div className="flex gap-2">
+          {/* Botón de Carga de Excel */}
+          <Dialog open={showUploader} onOpenChange={setShowUploader}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center gap-2 cursor-pointer">
+                <Upload className="h-4 w-4" />
+                Cargar Excel
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Importar Datos desde Excel</DialogTitle>
+              </DialogHeader>
+              <ExcelUploader onUploadSuccess={handleExcelUploadSuccess} onClose={() => setShowUploader(false)} />
+            </DialogContent>
+          </Dialog>
 
-        {/* Botón de Carga de Excel */}
-        <Dialog open={showUploader} onOpenChange={setShowUploader}>
-          <DialogTrigger asChild>
-            <Button className="flex items-center gap-2 cursor-pointer">
-              <Upload className="h-4 w-4" />
-              Cargar Excel
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Importar Datos desde Excel</DialogTitle>
-            </DialogHeader>
-            <ExcelUploader onUploadSuccess={handleExcelUploadSuccess} onClose={() => setShowUploader(false)} />
-          </DialogContent>
-        </Dialog>
-
-
-        <Button className="flex items-center gap-2 cursor-pointer">
-          Menú
-          <LayoutGrid className="h-7 w-7" />
-        </Button>
-      </div>
-
+          {/* Dropdown Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="flex items-center gap-2 cursor-pointer">
+                Menú
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <div className="flex items-center gap-2 p-2">
+                <User className="h-4 w-4" />
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">Usuario Admin</span>
+                  <span className="text-xs text-gray-500">admin@cinemark.com</span>
+                </div>
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="cursor-pointer">
+                <MapPin className="h-4 w-4 mr-2" />
+                Racks
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onNavigateToLogs} className="cursor-pointer">
+                <FileText className="h-4 w-4 mr-2" />
+                Logs
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onLogout} className="cursor-pointer text-red-600">
+                <LogOut className="h-4 w-4 mr-2" />
+                Salir
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {/* Búsqueda */}
@@ -297,22 +354,24 @@ export function CinemaList({ cinemas, onSelectCinema, onUploadExcel, onCreateCin
                     <Calendar className="h-3 w-3" />
                     Actualizado {cinema.lastUpdated}
                   </div>
-                  <div className="flex gap-1"><Button
-                    size="sm"
-                    // onClick={}
-                    className="flex items-center gap-1 cursor-pointer"
-                  >
-                    <SquarePen className="h-3 w-3" />
-                    Editar
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => onSelectCinema(cinema)}
-                    className="flex items-center gap-1 cursor-pointer"
-                  >
-                    <Eye className="h-3 w-3" />
-                    Ver Rack
-                  </Button></div>
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      onClick={() => onEditCinema(cinema)}
+                      className="flex items-center gap-1 cursor-pointer"
+                    >
+                      <SquarePen className="h-3 w-3" />
+                      Editar
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => onSelectCinema(cinema)}
+                      className="flex items-center gap-1 cursor-pointer"
+                    >
+                      <Eye className="h-3 w-3" />
+                      Ver Rack
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

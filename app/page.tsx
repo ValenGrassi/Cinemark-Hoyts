@@ -3,19 +3,40 @@
 import { useState } from "react"
 import { CinemaList } from "../components/cinema-list"
 import { RackDashboard } from "../components/rack-dashboard"
+import { RackEditor } from "../components/rack-editor"
+import { LogsPage } from "../components/logs-page"
 import type { Cinema } from "../types/cinema"
 import { sampleCinemas } from "../data/sample-cinemas"
+
+type ViewMode = "list" | "view" | "edit" | "logs"
 
 export default function CinemaManagementApp() {
   const [cinemas, setCinemas] = useState<Cinema[]>(sampleCinemas)
   const [selectedCinema, setSelectedCinema] = useState<Cinema | null>(null)
+  const [viewMode, setViewMode] = useState<ViewMode>("list")
 
   const handleSelectCinema = (cinema: Cinema) => {
     setSelectedCinema(cinema)
+    setViewMode("view")
+  }
+
+  const handleEditCinema = (cinema: Cinema) => {
+    setSelectedCinema(cinema)
+    setViewMode("edit")
   }
 
   const handleBackToList = () => {
     setSelectedCinema(null)
+    setViewMode("list")
+  }
+
+  const handleNavigateToLogs = () => {
+    setViewMode("logs")
+  }
+
+  const handleLogout = () => {
+    alert("Cerrando sesión...")
+    // Here you would implement actual logout logic
   }
 
   const handleUploadExcel = async (file: File, cinemaId?: string) => {
@@ -44,8 +65,21 @@ export default function CinemaManagementApp() {
     })
   }
 
-  if (selectedCinema) {
+  const handleSaveCinema = (updatedCinema: Cinema) => {
+    setCinemas((prevCinemas) => prevCinemas.map((cinema) => (cinema.id === updatedCinema.id ? updatedCinema : cinema)))
+    setViewMode("view")
+  }
+
+  if (viewMode === "view" && selectedCinema) {
     return <RackDashboard cinema={selectedCinema} onBack={handleBackToList} />
+  }
+
+  if (viewMode === "edit" && selectedCinema) {
+    return <RackEditor cinema={selectedCinema} onBack={handleBackToList} onSave={handleSaveCinema} />
+  }
+
+  if (viewMode === "logs") {
+    return <LogsPage onBack={handleBackToList} />
   }
 
   return (
@@ -54,8 +88,11 @@ export default function CinemaManagementApp() {
         <CinemaList
           cinemas={cinemas}
           onSelectCinema={handleSelectCinema}
+          onEditCinema={handleEditCinema}
           onUploadExcel={handleUploadExcel}
           onCreateCinema={handleCreateCinema}
+          onNavigateToLogs={handleNavigateToLogs}
+          onLogout={handleLogout}
         />
       </div>
     </div>
