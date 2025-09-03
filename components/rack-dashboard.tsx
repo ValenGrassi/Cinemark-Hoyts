@@ -10,6 +10,7 @@ import { Cinema, RackComponent } from '../types/cinema'
 import { calculateBatteryRemainingLife, getBatteryStatusColor, isBatteryDueForReplacement } from '../utils/battery-utils'
 import { PortDetailsModal } from './port-details-modal'
 import { PowerConsumptionCard } from './power-consumption-card'
+import {QRCodeSVG} from "qrcode.react"
 
 interface RackDashboardProps {
   cinema: Cinema
@@ -354,6 +355,23 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
                 </div>
               </CardContent>
             </Card>
+
+
+
+          {/* QR */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Compartir Rack</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-center">
+                  <QRCodeSVG value={window.location.href} size={128}
+          bgColor="#ffffff"
+          fgColor="#000000"/>
+                </div>
+              </CardContent>
+            </Card>
+
           </div>
 
           {/* Visualización del Rack de Servidores */}

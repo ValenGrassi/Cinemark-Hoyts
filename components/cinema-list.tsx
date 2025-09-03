@@ -29,6 +29,7 @@ import type { Cinema } from "../types/cinema"
 import { ExcelUploader } from "./excel-uploader"
 import { type ExcelCinemaData, convertExcelToRackComponents } from "../utils/excel-parser"
 import { calculateBatteryRemainingLife, isBatteryDueForReplacement } from "@/utils/battery-utils"
+import Link from "next/link"
 
 interface CinemaListProps {
   cinemas: Cinema[]
@@ -333,14 +334,13 @@ export function CinemaList({
                       <SquarePen className="h-3 w-3" />
                       Editar
                     </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => onSelectCinema(cinema)}
-                      className="flex items-center gap-1 cursor-pointer"
-                    >
-                      <Eye className="h-3 w-3" />
-                      Ver Rack
+                    <Button asChild size="sm" className="flex items-center gap-1 cursor-pointer">
+                      <Link href={`/racks/${cinema.id}`}>
+                        <Eye className="h-3 w-3" />
+                        Ver Rack
+                      </Link>
                     </Button>
+
                   </div>
                 </div>
               </CardContent>
