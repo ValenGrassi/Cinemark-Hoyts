@@ -26,9 +26,9 @@ import {
   FileText,
 } from "lucide-react"
 import type { Cinema } from "../types/cinema"
-import { calculateBatteryRemainingLife, isBatteryDueForReplacement } from "../utils/battery-utils"
 import { ExcelUploader } from "./excel-uploader"
 import { type ExcelCinemaData, convertExcelToRackComponents } from "../utils/excel-parser"
+import { calculateBatteryRemainingLife, isBatteryDueForReplacement } from "@/utils/battery-utils"
 
 interface CinemaListProps {
   cinemas: Cinema[]
@@ -65,7 +65,6 @@ export function CinemaList({
   )
 
   const handleExcelUploadSuccess = (data: ExcelCinemaData) => {
-    // Check if cinema already exists
     const existingCinema = cinemas.find(
       (c) =>
         c.name.toLowerCase() === data.cinemaName.toLowerCase() ||
@@ -75,30 +74,16 @@ export function CinemaList({
     const rackComponents = convertExcelToRackComponents(data)
 
     if (existingCinema) {
-      // Update existing cinema
       const updatedCinema: Cinema = {
         ...existingCinema,
         name: data.cinemaName,
         address: data.address,
         rackComponents,
         lastUpdated: new Date().toISOString().split("T")[0],
-        totalPowerConsumption: data.totalConsumption,
-        upsAutonomyHours: data.estimatedAutonomy,
-        upsCapacityVA: data.totalKVA * 1000,
-        upsWarnings: rackComponents.filter(
-          (c) =>
-            c.type === "ups" &&
-            c.batteryInstallDate &&
-            c.batteryLifespan &&
-            isBatteryDueForReplacement(c.batteryInstallDate, c.batteryLifespan),
-        ).length,
       }
-
-      // This would typically update the existing cinema
       console.log("Updating existing cinema:", updatedCinema)
       alert(`¡Cine "${data.cinemaName}" actualizado exitosamente!`)
     } else {
-      // Create new cinema
       const newCinema: Cinema = {
         id: `cinema-${Date.now()}`,
         name: data.cinemaName,
@@ -106,18 +91,7 @@ export function CinemaList({
         address: data.address,
         rackComponents,
         lastUpdated: new Date().toISOString().split("T")[0],
-        totalPowerConsumption: data.totalConsumption,
-        upsAutonomyHours: data.estimatedAutonomy,
-        upsCapacityVA: data.totalKVA * 1000,
-        upsWarnings: rackComponents.filter(
-          (c) =>
-            c.type === "ups" &&
-            c.batteryInstallDate &&
-            c.batteryLifespan &&
-            isBatteryDueForReplacement(c.batteryInstallDate, c.batteryLifespan),
-        ).length,
       }
-
       onCreateCinema(newCinema)
       alert(`¡Nuevo cine "${data.cinemaName}" creado exitosamente!`)
     }
@@ -127,10 +101,7 @@ export function CinemaList({
 
   const getUPSWarnings = (cinema: Cinema) => {
     return cinema.rackComponents.filter((component) => {
-      if (component.type === "ups" && component.batteryInstallDate && component.batteryLifespan) {
-        return isBatteryDueForReplacement(component.batteryInstallDate, component.batteryLifespan)
-      }
-      return false
+      return component.type === "ups" && component.batteryInstallDate && isBatteryDueForReplacement(component.batteryInstallDate)
     }).length
   }
 
@@ -144,7 +115,6 @@ export function CinemaList({
         </div>
 
         <div className="flex gap-2">
-          {/* Botón de Carga de Excel */}
           <Dialog open={showUploader} onOpenChange={setShowUploader}>
             <DialogTrigger asChild>
               <Button className="flex items-center gap-2 cursor-pointer">
@@ -160,7 +130,6 @@ export function CinemaList({
             </DialogContent>
           </Dialog>
 
-          {/* Dropdown Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button className="flex items-center gap-2 cursor-pointer">
@@ -177,10 +146,6 @@ export function CinemaList({
                 </div>
               </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer">
-                <MapPin className="h-4 w-4 mr-2" />
-                Racks
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={onNavigateToLogs} className="cursor-pointer">
                 <FileText className="h-4 w-4 mr-2" />
                 Logs
@@ -195,7 +160,6 @@ export function CinemaList({
         </div>
       </div>
 
-      {/* Búsqueda */}
       <div className="max-w-md">
         <Input
           placeholder="Buscar cines por nombre..."
@@ -275,14 +239,12 @@ export function CinemaList({
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">Estado UPS</h4>
                   {upsComponents.map((ups) => {
-                    const remainingMonths =
-                      ups.batteryInstallDate && ups.batteryLifespan
-                        ? calculateBatteryRemainingLife(ups.batteryInstallDate, ups.batteryLifespan)
-                        : null
-                    const isDue =
-                      ups.batteryInstallDate && ups.batteryLifespan
-                        ? isBatteryDueForReplacement(ups.batteryInstallDate, ups.batteryLifespan)
-                        : false
+                    const remainingMonths = ups.batteryInstallDate
+                      ? calculateBatteryRemainingLife(ups.batteryInstallDate)
+                      : null
+                    const isDue = ups.batteryInstallDate
+                      ? isBatteryDueForReplacement(ups.batteryInstallDate)
+                      : false
 
                     return (
                       <div key={ups.id} className="flex justify-between items-center text-xs">
@@ -290,7 +252,9 @@ export function CinemaList({
                         <div className="flex items-center gap-2">
                           {remainingMonths !== null && (
                             <span
-                              className={`px-2 py-1 rounded ${isDue ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}
+                              className={`px-2 py-1 rounded ${
+                                isDue ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
+                              }`}
                             >
                               {remainingMonths} meses restantes
                             </span>
@@ -299,9 +263,9 @@ export function CinemaList({
                             className={`w-2 h-2 rounded-full ${
                               ups.status === "online"
                                 ? "bg-green-500"
-                                : ups.status === "warning"
-                                  ? "bg-yellow-500"
-                                  : "bg-red-500"
+                                : ups.status === "warning" && remainingMonths > 6
+                                ? "bg-yellow-500"
+                                : "bg-red-500"
                             }`}
                           />
                         </div>
@@ -320,7 +284,13 @@ export function CinemaList({
                   <div className="flex justify-between items-center text-xs">
                     <span>Autonomía UPS:</span>
                     <span
-                      className={`font-medium ${cinema.upsAutonomyHours < 2 ? "text-red-600" : cinema.upsAutonomyHours < 4 ? "text-yellow-600" : "text-green-600"}`}
+                      className={`font-medium ${
+                        cinema.upsAutonomyHours < 2
+                          ? "text-red-600"
+                          : cinema.upsAutonomyHours < 4
+                          ? "text-yellow-600"
+                          : "text-green-600"
+                      }`}
                     >
                       {cinema.upsAutonomyHours}h
                     </span>

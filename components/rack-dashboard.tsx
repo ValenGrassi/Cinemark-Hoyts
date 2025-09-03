@@ -386,49 +386,49 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
                   
                   {/* Componentes */}
                   {cinema.rackComponents.map((component, index) => {
-  const ports = component.specs?.ports || 0
+                    const ports = component.specs?.ports || 0
 
-  // Calcular filas necesarias
-  const rows = Math.ceil(ports / 12)
+                    // Calcular filas necesarias
+                    const rows = Math.ceil(ports / 12)
 
-  // Altura dinámica según filas
-  const baseHeight = 50
-  const componentHeight = baseHeight + (rows - 1) * 10 // +10 por cada fila extra
+                    // Altura dinámica según filas
+                    const baseHeight = 50
+                    const componentHeight = baseHeight + (rows - 1) * 10 // +10 por cada fila extra
 
-  // yPosition dinámico sumando alturas de componentes anteriores
-  const yPosition = 50 + cinema.rackComponents
-    .slice(0, index)
-    .reduce((acc, c) => {
-      const cRows = Math.ceil((c.specs?.ports || 0) / 12)
-      const cHeight = baseHeight + (cRows - 1) * 10
-      return acc + cHeight + 5 // +5 margen entre componentes
-    }, 0)
+                    // yPosition dinámico sumando alturas de componentes anteriores
+                    const yPosition = 50 + cinema.rackComponents
+                      .slice(0, index)
+                      .reduce((acc, c) => {
+                        const cRows = Math.ceil((c.specs?.ports || 0) / 12)
+                        const cHeight = baseHeight + (cRows - 1) * 10
+                        return acc + cHeight + 5 // +5 margen entre componentes
+                      }, 0)
 
-  const isServer = component.type === 'server'
-  const isUPS = component.type === 'ups'
-  const isNetworkDevice = ['switch', 'router', 'firewall', 'wireless-controller', 'converter'].includes(component.type)
-  const isPatchPanel = component.type === 'patch-panel'
+                    const isServer = component.type === 'server'
+                    const isUPS = component.type === 'ups'
+                    const isNetworkDevice = ['switch', 'router', 'firewall', 'wireless-controller', 'converter'].includes(component.type)
+                    const isPatchPanel = component.type === 'patch-panel'
 
-  return (
-    <g key={component.id}>
-      {/* Cuerpo del Componente */}
-      <rect
-        x="50"
-        y={yPosition}
-        width="200"
-        height={componentHeight}
-        fill={
-          isServer ? '#1f2937' : 
-          isUPS ? '#581c87' : 
-          isNetworkDevice ? '#0f172a' :
-          '#374151'
-        }
-        stroke={getStatusColor(component.status)}
-        strokeWidth="2"
-        rx="4"
-        className="cursor-pointer hover:opacity-80 transition-opacity"
-        onClick={() => handleComponentClick(component)}
-      />
+                    return (
+                      <g key={component.id}>
+                        {/* Cuerpo del Componente */}
+                        <rect
+                          x="50"
+                          y={yPosition}
+                          width="200"
+                          height={componentHeight}
+                          fill={
+                            isServer ? '#1f2937' : 
+                            isUPS ? '#581c87' : 
+                            isNetworkDevice ? '#0f172a' :
+                            '#374151'
+                          }
+                          stroke={getStatusColor(component.status)}
+                          strokeWidth="2"
+                          rx="4"
+                          className="cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => handleComponentClick(component)}
+                        />
 
                         
                         {/* LED de Estado */}
@@ -480,7 +480,7 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
                         {/* Detalles de dispositivos de red (switches, routers, etc.) */}
                           {isNetworkDevice && (
                             <>
-                              {Array.from({ length: component.specs?.ports || 8 }).map((_, portIndex) => {
+                              {Array.from({ length: component.specs?.ports || 0 }).map((_, portIndex) => {
                                 const isConnected = portIndex < (component.specs?.connections || 0)
 
                                 const maxPerRow = 12
@@ -510,51 +510,37 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
                         
                         {/* Detalles específicos del Panel de Conexiones */}
                         {isPatchPanel && (
-  <>
-    {/* Indicadores de puerto pequeños debajo del texto */}
-    {Array.from({ length: component.specs?.ports || 24 }).map((_, portIndex) => {
-      const isConnected = portIndex < (component.specs?.connections || 0)
+                      <>
+                        {/* Indicadores de puerto pequeños debajo del texto */}
+                        {Array.from({ length: component.specs?.ports || 24 }).map((_, portIndex) => {
+                          const isConnected = portIndex < (component.specs?.connections || 0)
 
-      const maxPerRow = 12
-      const spacingX = 12
-      const spacingY = 8
+                          const maxPerRow = 12
+                          const spacingX = 12
+                          const spacingY = 8
 
-      const row = Math.floor(portIndex / maxPerRow)
-      const col = portIndex % maxPerRow
+                          const row = Math.floor(portIndex / maxPerRow)
+                          const col = portIndex % maxPerRow
 
-      const x = 85 + col * spacingX
-      const y = yPosition + 40 + row * spacingY // ajusta vertical por fila
+                          const x = 85 + col * spacingX
+                          const y = yPosition + 40 + row * spacingY // ajusta vertical por fila
 
-      return (
-        <rect
-          key={portIndex}
-          x={x}
-          y={y}
-          width="4"
-          height="4"
-          fill={isConnected ? '#22c55e' : '#6b7280'}
-          rx="1"
-          className="cursor-pointer"
-          onClick={() => handleComponentClick(component)}
-        />
-      )
-    })}
-  </>
-)}
-
-                        
-                        {/* Consumo de energía */}
-                        {component.powerConsumption && component.powerConsumption > 0 && component.type !== 'ups' && (
-                          <text
-                            x="240"
-                            y={yPosition + 20}
-                            fill="#3b82f6"
-                            fontSize="6"
-                            textAnchor="middle"
-                          >
-                            {component.powerConsumption}W
-                          </text>
-                        )}
+                          return (
+                            <rect
+                              key={portIndex}
+                              x={x}
+                              y={y}
+                              width="4"
+                              height="4"
+                              fill={isConnected ? '#22c55e' : '#6b7280'}
+                              rx="1"
+                              className="cursor-pointer"
+                              onClick={() => handleComponentClick(component)}
+                            />
+                          )
+                        })}
+                      </>
+                    )}
                       </g>
                     )
                   })}

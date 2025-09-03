@@ -22,20 +22,12 @@ interface LogsPageProps {
 
 export function LogsPage({ onBack }: LogsPageProps) {
   const [logs, setLogs] = useState<LogEntry[]>([])
-  const [searchTerm, setSearchTerm] = useState("")
 
   useEffect(() => {
     // Load logs from localStorage
     const storedLogs = JSON.parse(localStorage.getItem("rackLogs") || "[]")
     setLogs(storedLogs)
   }, [])
-
-  const filteredLogs = logs.filter(
-    (log) =>
-      log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.cinema.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.user.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
 
   const formatDate = (timestamp: string) => {
     return new Date(timestamp).toLocaleString("es-ES", {
@@ -68,7 +60,7 @@ export function LogsPage({ onBack }: LogsPageProps) {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8 flex items-center gap-4">
-          <Button variant="outline" onClick={onBack} className="flex items-center gap-2 bg-transparent">
+          <Button variant="outline" onClick={onBack} className="flex items-center gap-2 bg-transparent cursor-pointer">
             <ArrowLeft className="h-4 w-4" />
             Volver
           </Button>
@@ -80,17 +72,7 @@ export function LogsPage({ onBack }: LogsPageProps) {
 
         {/* Search and Stats */}
         <div className="mb-6 space-y-4">
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Buscar por acción, cine o usuario..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
+          
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card>
@@ -132,11 +114,11 @@ export function LogsPage({ onBack }: LogsPageProps) {
               Registro de Actividades
             </CardTitle>
             <CardDescription>
-              {filteredLogs.length} de {logs.length} registros mostrados
+              {logs.length} de {logs.length} registros mostrados
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {filteredLogs.length === 0 ? (
+            {logs.length === 0 ? (
               <div className="text-center py-12">
                 <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-500">
@@ -147,7 +129,7 @@ export function LogsPage({ onBack }: LogsPageProps) {
               </div>
             ) : (
               <div className="space-y-4">
-                {filteredLogs.map((log) => (
+                {logs.map((log) => (
                   <div key={log.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
