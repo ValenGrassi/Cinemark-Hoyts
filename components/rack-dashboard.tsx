@@ -5,12 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { ArrowLeft, Server, Network, Zap, Cpu, HardDrive, Thermometer, Battery, Clock, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Server, Network, Zap, Cpu, HardDrive, Thermometer, Battery, Clock, AlertTriangle, Redo2 } from 'lucide-react'
 import { Cinema, RackComponent } from '../types/cinema'
 import { calculateBatteryRemainingLife, getBatteryStatusColor, isBatteryDueForReplacement } from '../utils/battery-utils'
 import { PortDetailsModal } from './port-details-modal'
 import { PowerConsumptionCard } from './power-consumption-card'
 import {QRCodeSVG} from "qrcode.react"
+import { Copy, Download } from "lucide-react"
+
+
 
 interface RackDashboardProps {
   cinema: Cinema
@@ -80,6 +83,39 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
       case 'ups': return 'UPS'
       default: return type.toUpperCase()
     }
+  }
+
+  const url = typeof window !== "undefined" ? window.location.href : ""
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Rack",
+          text: "Mirá este rack del cine",
+          url,
+        })
+      } catch (err) {
+        console.log("Cancelado", err)
+      }
+    } else {
+      // fallback → copiar
+      navigator.clipboard.writeText(url)
+      alert("✅ Link copiado al portapapeles")
+    }
+  }
+
+  const handleDownload = () => {
+    const svg = document.querySelector("#rack-qr") as SVGElement
+    const svgData = new XMLSerializer().serializeToString(svg)
+    const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" })
+    const urlBlob = URL.createObjectURL(blob)
+
+    const link = document.createElement("a")
+    link.href = urlBlob
+    link.download = "rack-qr.svg"
+    link.click()
+    URL.revokeObjectURL(urlBlob)
   }
 
   return (
@@ -359,19 +395,30 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
 
 
           {/* QR */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Compartir Rack</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-center">
-                  <QRCodeSVG value={window.location.href} size={128}
-          bgColor="#ffffff"
-          fgColor="#000000"/>
-                </div>
-              </CardContent>
-            </Card>
-
+          <Card>
+      <CardHeader>
+        <CardTitle>Compartir Rack</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col justify-center items-center gap-5">
+          <QRCodeSVG
+            id="rack-qr"
+            value={url}
+            size={128}
+            bgColor="#ffffff"
+            fgColor="#000000"
+          />
+          <div className="flex gap-3">
+            <Button className="cursor-pointer" variant="outline" size="sm" onClick={handleShare}>
+              Compartir <Redo2 className="ml-1 w-4 h-4" />
+            </Button>
+            <Button className="cursor-pointer" variant="outline" size="sm" onClick={handleDownload}>
+              Descargar QR<Download className="ml-1 w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
           </div>
 
           {/* Visualización del Rack de Servidores */}
