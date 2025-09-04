@@ -12,6 +12,7 @@ import { PortDetailsModal } from './port-details-modal'
 import { PowerConsumptionCard } from './power-consumption-card'
 import {QRCodeSVG} from "qrcode.react"
 import { Copy, Download } from "lucide-react"
+import { usePathname } from "next/navigation"
 
 
 
@@ -85,9 +86,8 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
     }
   }
 
-  const url = typeof window !== "undefined" ? window.location.href : ""
-
-  console.log(window.location.href)
+  const pathname = usePathname()
+  const url = typeof window !== "undefined" ? `${window.location.origin}${pathname}` : ""
 
   const handleShare = async () => {
     if (navigator.share) {
