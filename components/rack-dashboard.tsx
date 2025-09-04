@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -53,6 +53,16 @@ const getStatusText = (status: string) => {
 
 export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
   const [selectedComponent, setSelectedComponent] = useState<RackComponent | null>(null)
+  const pathname = usePathname()
+  const [url, setUrl] = useState("")
+
+  useEffect(() => {
+    // se ejecuta solo en cliente
+    if (typeof window !== "undefined") {
+      setUrl(`${window.location.origin}${pathname}`)
+    }
+  }, [pathname]) // se recalcula cada vez que cambia la ruta
+
 
   const handleComponentClick = (component: RackComponent) => {
     setSelectedComponent(component)
@@ -86,9 +96,6 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
     }
   }
 
-  const pathname = usePathname()
-  const url = typeof window !== "undefined" ? `${window.location.origin}${pathname}` : ""
-
   const handleShare = async () => {
     if (navigator.share) {
       try {
@@ -108,18 +115,41 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
   }
 
   const handleDownload = () => {
-    const svg = document.querySelector("#rack-qr") as SVGElement
+    const svg = document.querySelector("#rack-qr") as SVGSVGElement
+    if (!svg) return
+  
     const svgData = new XMLSerializer().serializeToString(svg)
-    const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" })
-    const urlBlob = URL.createObjectURL(blob)
-
-    const link = document.createElement("a")
-    link.href = urlBlob
-    link.download = "rack-qr.svg"
-    link.click()
-    URL.revokeObjectURL(urlBlob)
+    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" })
+    const url = URL.createObjectURL(svgBlob)
+  
+    const image = new Image()
+    image.onload = () => {
+      const canvas = document.createElement("canvas")
+      canvas.width = image.width
+      canvas.height = image.height
+      const ctx = canvas.getContext("2d")
+      if (!ctx) return
+  
+      // Fondo blanco para que el PNG no quede transparente
+      ctx.fillStyle = "#ffffff"
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+  
+      ctx.drawImage(image, 0, 0)
+  
+      canvas.toBlob((blob) => {
+        if (!blob) return
+        const pngUrl = URL.createObjectURL(blob)
+        const link = document.createElement("a")
+        link.href = pngUrl
+        link.download = "rack-qr.png"
+        link.click()
+        URL.revokeObjectURL(pngUrl)
+        URL.revokeObjectURL(url)
+      })
+    }
+    image.src = url
   }
-
+  
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -403,13 +433,13 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
       </CardHeader>
       <CardContent>
         <div className="flex flex-col justify-center items-center gap-5">
-          <QRCodeSVG
+          {url && <QRCodeSVG
             id="rack-qr"
             value={url}
             size={128}
             bgColor="#ffffff"
             fgColor="#000000"
-          />
+          />}
           <div className="flex gap-3">
             <Button className="cursor-pointer" variant="outline" size="sm" onClick={handleShare}>
               Compartir <Redo2 className="ml-1 w-4 h-4" />
