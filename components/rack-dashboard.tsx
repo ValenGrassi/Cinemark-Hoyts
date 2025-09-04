@@ -141,7 +141,7 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
         const pngUrl = URL.createObjectURL(blob)
         const link = document.createElement("a")
         link.href = pngUrl
-        link.download = "rack-qr.png"
+        link.download = `rack-qr-${cinema.id}.png`
         link.click()
         URL.revokeObjectURL(pngUrl)
         URL.revokeObjectURL(url)
@@ -154,12 +154,12 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Encabezado */}
-        <div className="mb-8 flex items-center gap-4">
+        <div className="mb-8 flex items-center gap-4 flex-col md:flex-row">
           <Button variant="outline" onClick={onBack} className="flex items-center gap-2 cursor-pointer">
             <ArrowLeft className="h-4 w-4" />
             Volver a Ubicaciones
           </Button>
-          <div>
+          <div className="text-center md:text-start">
             <h1 className="text-3xl font-bold text-gray-900">{cinema.name}</h1>
             <p className="text-gray-600 mt-1">{cinema.address}</p>
           </div>
@@ -351,7 +351,7 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
                       </div>
                     )}
 
-                    {selectedComponent.powerConsumption && (
+                    {selectedComponent.type !== "patch-panel" && selectedComponent.powerConsumption && (
                       <div className="col-span-2">
                         <Separator className="mb-3" />
                         <div className="space-y-2">
@@ -403,13 +403,13 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
                     <div className="text-sm text-gray-600">En Línea</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-red-600">
+                    <div className="text-2xl font-bold text-yellow-600">
                       {cinema.rackComponents.filter(c => c.status === 'offline').length}
                     </div>
                     <div className="text-sm text-gray-600">Desconectado</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-yellow-600">
+                    <div className="text-2xl font-bold text-red-600">
                       {cinema.rackComponents.filter(c => c.status === 'warning').length}
                     </div>
                     <div className="text-sm text-gray-600">Advertencia</div>

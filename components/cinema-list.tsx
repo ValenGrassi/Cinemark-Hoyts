@@ -30,6 +30,7 @@ import { ExcelUploader } from "./excel-uploader"
 import { type ExcelCinemaData, convertExcelToRackComponents } from "../utils/excel-parser"
 import { calculateBatteryRemainingLife, isBatteryDueForReplacement } from "@/utils/battery-utils"
 import Link from "next/link"
+import { calculateTotalKva, calculateTotalPowerConsumption, calculateUPSAutonomy } from "@/utils/power-calculations"
 
 interface CinemaListProps {
   cinemas: Cinema[]
@@ -211,6 +212,7 @@ export function CinemaList({
         {filteredCinemas.map((cinema) => {
           const upsWarnings = getUPSWarnings(cinema)
           const upsComponents = cinema.rackComponents.filter((c) => c.type === "ups")
+          const autonomy = calculateUPSAutonomy(cinema.rackComponents)
 
           return (
             <Card key={cinema.id} className="hover:shadow-lg transition-shadow">
@@ -251,7 +253,7 @@ export function CinemaList({
                       <div key={ups.id} className="flex justify-between items-center text-xs">
                         <span>{ups.name}</span>
                         <div className="flex items-center gap-2">
-                          {remainingMonths !== null && (
+                          {remainingMonths !== null && remainingMonths !== 0 && (
                             <span
                               className={`px-2 py-1 rounded ${
                                 isDue ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
@@ -260,11 +262,18 @@ export function CinemaList({
                               {remainingMonths} meses restantes
                             </span>
                           )}
+                          {remainingMonths == 0 && (
+                            <span
+                              className={`px-2 py-1 rounded bg-red-100 text-red-800`}
+                            >
+                              Cambiar baterias
+                            </span>
+                          )}
                           <div
                             className={`w-2 h-2 rounded-full ${
-                              ups.status === "online"
+                              remainingMonths !== null && remainingMonths > 12
                                 ? "bg-green-500"
-                                : ups.status === "warning" && remainingMonths > 6
+                                : remainingMonths !== null && remainingMonths < 12 && remainingMonths > 6
                                 ? "bg-yellow-500"
                                 : "bg-red-500"
                             }`}
@@ -280,25 +289,25 @@ export function CinemaList({
                   <h4 className="font-medium text-sm">Consumo de Energía</h4>
                   <div className="flex justify-between items-center text-xs">
                     <span>Consumo Total:</span>
-                    <span className="font-medium text-blue-600">{cinema.totalPowerConsumption}W</span>
+                    <span className="font-medium text-blue-600">{calculateTotalPowerConsumption(cinema.rackComponents)}W</span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
                     <span>Autonomía UPS:</span>
                     <span
                       className={`font-medium ${
-                        cinema.upsAutonomyHours < 2
+                        autonomy < 2
                           ? "text-red-600"
-                          : cinema.upsAutonomyHours < 4
+                          : autonomy < 4
                           ? "text-yellow-600"
                           : "text-green-600"
                       }`}
                     >
-                      {cinema.upsAutonomyHours}h
+                      {autonomy}h
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
-                    <span>Capacidad UPS:</span>
-                    <span className="font-medium text-purple-600">{cinema.upsCapacityVA}VA</span>
+                    <span>Capacidad Total UPS:</span>
+                    <span className="font-medium text-purple-600">{calculateTotalKva(cinema.rackComponents)}VA</span>
                   </div>
                 </div>
 

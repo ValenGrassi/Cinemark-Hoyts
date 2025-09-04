@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardPorts, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -24,24 +24,6 @@ export function PortDetailsModal({ component, children }: PortDetailsModalProps)
       case 'patch-panel': return <Network className="h-5 w-5 text-gray-600" />
       case 'converter': return <Zap className="h-5 w-5 text-orange-600" />
       default: return <Server className="h-5 w-5 text-gray-600" />
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-500'
-      case 'inactive': return 'bg-gray-400'
-      case 'error': return 'bg-red-500'
-      default: return 'bg-gray-400'
-    }
-  }
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'active': return 'Activo'
-      case 'inactive': return 'Inactivo'
-      case 'error': return 'Error'
-      default: return 'Desconocido'
     }
   }
 
@@ -69,18 +51,12 @@ export function PortDetailsModal({ component, children }: PortDetailsModalProps)
         <ScrollArea className="h-[60vh] pr-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {component.specs.portDetails.map((port) => (
-              <Card key={port.portNumber} className={`border-l-4 ${
+              <CardPorts key={port.portNumber} className={`border-l-4 ${
                 port.isConnected ? 'border-l-green-500' : 'border-l-gray-300'
               }`}>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm">Puerto {port.portNumber}</CardTitle>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${getStatusColor(port.status)}`} />
-                      <Badge variant={port.isConnected ? "default" : "secondary"} className="text-xs">
-                        {getStatusText(port.status)}
-                      </Badge>
-                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0">
@@ -109,7 +85,7 @@ export function PortDetailsModal({ component, children }: PortDetailsModalProps)
                     )}
                   </div>
                 </CardContent>
-              </Card>
+              </CardPorts>
             ))}
           </div>
         </ScrollArea>

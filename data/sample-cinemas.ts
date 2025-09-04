@@ -21,9 +21,6 @@ export const sampleCinemas: Cinema[] = [
     location: 'Malvinas Argentinas',
     address: 'Av. Presidente Perón 2500, Malvinas Argentinas, Buenos Aires',
     lastUpdated: '2024-01-08',
-    totalPowerConsumption: 775,
-    upsAutonomyHours: 6,
-    upsCapacityVA: 10000,
     generator: false,
     rackComponents: [
       {
@@ -82,9 +79,7 @@ export const sampleCinemas: Cinema[] = [
     location: 'Moreno',
     address: 'Av. Victorica 1234, Moreno, Buenos Aires',
     lastUpdated: '2024-01-08',
-    totalPowerConsumption: 485,
-    upsAutonomyHours: 2.8,
-    upsCapacityVA: 3000,
+
     generator: false,
     rackComponents: [
       {
@@ -149,9 +144,7 @@ export const sampleCinemas: Cinema[] = [
     location: 'Morón',
     address: 'Av. Rivadavia 5678, Morón, Buenos Aires',
     lastUpdated: '2024-01-08',
-    totalPowerConsumption: 520,
-    upsAutonomyHours: 2.1,
-    upsCapacityVA: 2200,
+
     generator: false,
     rackComponents: [
       {
@@ -216,9 +209,7 @@ export const sampleCinemas: Cinema[] = [
     location: 'San Martín',
     address: 'Av. San Martín 9012, San Martín, Buenos Aires',
     lastUpdated: '2024-01-08',
-    totalPowerConsumption: 280,
-    upsAutonomyHours: 4.5,
-    upsCapacityVA: 3000,
+
     generator: true,
     rackComponents: [
       {
@@ -256,9 +247,6 @@ export const sampleCinemas: Cinema[] = [
     location: 'Palermo',
     address: 'Av. Santa Fe 1234, Palermo, Buenos Aires',
     lastUpdated: '2025-08-15',
-    totalPowerConsumption: 1200,
-    upsAutonomyHours: 5,
-    upsCapacityVA: 15000,
     generator: true,
     rackComponents: [
       {

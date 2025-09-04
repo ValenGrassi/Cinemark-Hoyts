@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, Server, Network, Zap, Plus, Trash2, Save, X } from "lucide-react"
 import type { Cinema, RackComponent } from "../types/cinema"
+import { calculateTotalKva, calculateTotalPowerConsumption, calculateUPSAutonomy } from "@/utils/power-calculations"
 
 interface RackEditorProps {
   cinema: Cinema
@@ -148,28 +149,15 @@ export function RackEditor({ cinema, onBack, onSave }: RackEditorProps) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <Label>Consumo Total (W)</Label>
-                    <Input
-                      type="number"
-                      value={editedCinema.totalPowerConsumption}
-                      onChange={e => handleCinemaChange("totalPowerConsumption", Number(e.target.value))}
-                    />
+                    <p className="text-sm">{calculateTotalPowerConsumption(editedCinema.rackComponents)}</p>
                   </div>
                   <div>
                     <Label>Autonomía UPS (h)</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={editedCinema.upsAutonomyHours}
-                      onChange={e => handleCinemaChange("upsAutonomyHours", Number(e.target.value))}
-                    />
+                    <p className="text-sm">{calculateUPSAutonomy(editedCinema.rackComponents)}</p>
                   </div>
                   <div>
                     <Label>Capacidad Total UPS (VA)</Label>
-                    <Input
-                      type="number"
-                      value={editedCinema.upsCapacityVA}
-                      onChange={e => handleCinemaChange("upsCapacityVA", Number(e.target.value))}
-                    />
+                    <p className="text-sm">{calculateTotalKva(editedCinema.rackComponents)}</p>
                   </div>
                 </div>
               </CardContent>
@@ -187,7 +175,9 @@ export function RackEditor({ cinema, onBack, onSave }: RackEditorProps) {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {editedCinema.rackComponents.map(component => (
+                {[...editedCinema.rackComponents]
+                  .sort((a, b) => a.position - b.position)
+                  .map(component => (
                     <div
                       key={component.id}
                       className={`p-3 border rounded-lg cursor-pointer transition-colors ${

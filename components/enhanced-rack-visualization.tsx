@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Cinema, RackComponent } from '../types/cinema'
 import { calculateBatteryRemainingLife, getBatteryStatusColor, isBatteryDueForReplacement } from '../utils/battery-utils'
+import { calculateTotalPowerConsumption, calculateUPSAutonomy } from "@/utils/power-calculations"
 
 interface EnhancedRackVisualizationProps {
   cinema: Cinema
@@ -499,8 +500,8 @@ export function EnhancedRackVisualization({ cinema, onComponentClick, selectedCo
           <div className="w-4 h-4 bg-gradient-to-r from-purple-600 to-blue-500 rounded" />
         </CardTitle>
         <div className="flex justify-center gap-4 text-xs">
-          <Badge variant="outline">Total: {cinema.totalPowerConsumption}W</Badge>
-          <Badge variant="outline">Autonomía: {cinema.upsAutonomyHours}h</Badge>
+          <Badge variant="outline">Total: {calculateTotalPowerConsumption(cinema.rackComponents)}W</Badge>
+          <Badge variant="outline">Autonomía: {calculateUPSAutonomy(cinema.rackComponents)}h</Badge>
           <Badge variant="outline">Componentes: {cinema.rackComponents.length}</Badge>
         </div>
       </CardHeader>

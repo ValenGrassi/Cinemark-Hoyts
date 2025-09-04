@@ -5,7 +5,7 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Zap, Battery, Clock, AlertTriangle } from 'lucide-react'
 import { Cinema } from '../types/cinema'
-import { calculateUPSAutonomy, getUPSLoadPercentage } from '../utils/power-calculations'
+import { calculateTotalKva, calculateTotalPowerConsumption, calculateUPSAutonomy, getUPSLoadPercentage } from '../utils/power-calculations'
 
 interface PowerConsumptionCardProps {
   cinema: Cinema
@@ -13,12 +13,10 @@ interface PowerConsumptionCardProps {
 
 export function PowerConsumptionCard({ cinema }: PowerConsumptionCardProps) {
   const upsComponents = cinema.rackComponents.filter(c => c.type === 'ups')
-  const mainUPS = upsComponents.find(ups => ups.specs?.capacity && ups.specs.capacity.includes('10000')) || upsComponents[0]
   
-  const totalConsumption = cinema.totalPowerConsumption
-  const upsCapacity = cinema.upsCapacityVA
-  const loadPercentage = getUPSLoadPercentage(totalConsumption, upsCapacity)
-  const autonomyHours = cinema.upsAutonomyHours
+  const upsCapacity = calculateTotalKva(cinema.rackComponents)
+  const loadPercentage = getUPSLoadPercentage(calculateTotalPowerConsumption(cinema.rackComponents), upsCapacity)
+  const autonomyHours = calculateUPSAutonomy(cinema.rackComponents)
 
   const getLoadColor = (percentage: number) => {
     if (percentage > 80) return 'text-red-600'
@@ -46,7 +44,7 @@ export function PowerConsumptionCard({ cinema }: PowerConsumptionCardProps) {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Consumo Total del Rack</span>
-            <span className="text-lg font-bold text-blue-600">{totalConsumption}W</span>
+            <span className="text-lg font-bold text-blue-600">{calculateTotalPowerConsumption(cinema.rackComponents)}W</span>
           </div>
           <div className="grid grid-cols-3 gap-2 text-xs text-gray-600">
             <div className="text-center">
@@ -92,7 +90,7 @@ export function PowerConsumptionCard({ cinema }: PowerConsumptionCardProps) {
           </div>
           <div className="flex items-center gap-2 text-xs text-gray-600">
             <Clock className="h-3 w-3" />
-            <span>Con carga actual de {totalConsumption}W</span>
+            <span>Con carga actual de {calculateTotalPowerConsumption(cinema.rackComponents)}W</span>
           </div>
         </div>
 
@@ -124,17 +122,17 @@ export function PowerConsumptionCard({ cinema }: PowerConsumptionCardProps) {
         </div>
 
         {/* Alertas */}
-        {(loadPercentage > 80 || autonomyHours < 2) && (
+        {(loadPercentage > 90 || autonomyHours < 2) && (
           <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-md">
             <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5" />
             <div className="text-sm">
               <p className="font-medium text-red-800">Advertencias de Energía:</p>
               <ul className="text-red-700 mt-1 space-y-1">
-                {loadPercentage > 80 && (
-                  <li>• Carga UPS alta ({loadPercentage}%) - considerar reducir consumo</li>
+                {loadPercentage > 90 && (
+                  <li>• Carga UPS alta ({loadPercentage}%) - considerar reducir consumo.</li>
                 )}
                 {autonomyHours < 2 && (
-                  <li>• Autonomía baja ({autonomyHours}h) - verificar baterías UPS</li>
+                  <li>• Autonomía baja ({autonomyHours}h) - considerar agregar baterías.</li>
                 )}
               </ul>
             </div>

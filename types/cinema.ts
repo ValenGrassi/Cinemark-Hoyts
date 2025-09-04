@@ -34,8 +34,5 @@ export interface Cinema {
   address: string
   rackComponents: RackComponent[]
   lastUpdated: string
-  totalPowerConsumption: number
-  upsAutonomyHours: number
-  upsCapacityVA: number
   generator: boolean
 }
