@@ -43,10 +43,12 @@ interface CinemaListProps {
   onCreateCinema: (cinemaData: Cinema) => void
   onNavigateToLogs: () => void,
   onLogin: () => void,
-  onLogout: () => void
+  onLogout: () => void,
+  isLoading: () => void
 }
 
 export function CinemaList({
+  isLoading,
   cinemas,
   onLogin,
   loggedIn,
@@ -173,7 +175,7 @@ export function CinemaList({
           <p className="text-gray-600 mt-2">Gestiona los racks de servidores en todas las ubicaciones de cines</p>
         </div>
 
-      <div className="max-w-md">
+      {isLoading ? <p>cargando...</p> : <div className="max-w-md">
         <Input
           placeholder="Buscar cines por nombre..."
           value={searchTerm}
@@ -367,7 +369,7 @@ export function CinemaList({
             </Card>
           )
         })}
-      </div>
+      </div>}
 
       {filteredCinemas.length === 0 && (
         <div className="text-center py-12">

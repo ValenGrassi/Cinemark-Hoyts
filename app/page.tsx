@@ -21,16 +21,6 @@ export default function CinemaManagementApp() {
   const [loggedIn, setLoggedIn] = useState(false) // inicializamos en true para ver dashboard
 
   const { cinemas, isLoading, error, refresh } = useCinemas();
-  
-  const allCinemas: Cinema[] = [
-    ...(cinemas || []), // primero los de la DB
-    ...loadCinemas.filter(sample => 
-      !cinemas?.some(dbCinema => dbCinema.id === sample.id)
-    ) // luego los sample que no están en la DB
-  ];
-  
-  
-  cinemas.sort((a, b) => a.name.localeCompare(b.name));
 
   const handleSelectCinema = (cinema: Cinema) => {
     setSelectedCinema(cinema)
@@ -131,6 +121,7 @@ export default function CinemaManagementApp() {
           onCreateCinema={handleCreateCinema}
           onNavigateToLogs={handleNavigateToLogs}
           onLogout={handleLogout}
+          isLoading={isLoading}
         />
       </div>
     </div>
