@@ -1,7 +1,7 @@
 import type { Cinema } from "@/types/cinema";
 
 async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
-  const base = process.env.NEXT_PUBLIC_API_URL || "";
+  const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
   const url = `${base}${path}`;
   const response = await fetch(url, {
     ...opts,
