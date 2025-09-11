@@ -25,8 +25,8 @@ export function PowerConsumptionCard({ cinema }: PowerConsumptionCardProps) {
   }
 
   const getAutonomyColor = (hours: number) => {
-    if (hours < 2) return 'text-red-600'
-    if (hours < 4) return 'text-yellow-600'
+    if (hours < 1) return 'text-red-600'
+    if (hours < 2) return 'text-yellow-600'
     return 'text-green-600'
   }
 
@@ -129,17 +129,17 @@ export function PowerConsumptionCard({ cinema }: PowerConsumptionCardProps) {
         </div>
 
         {/* Alertas */}
-        {(loadPercentage > 90 || autonomyHours < 2) && (
+        {(loadPercentage > 50 || autonomyHours < 1) && (
           <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-md">
             <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5" />
             <div className="text-sm">
               <p className="font-medium text-red-800">Advertencias de Energía:</p>
               <ul className="text-red-700 mt-1 space-y-1">
-                {loadPercentage > 90 && (
+                {loadPercentage > 50 && (
                   <li>• Carga UPS alta ({loadPercentage}%) - considerar reducir consumo.</li>
                 )}
-                {autonomyHours < 2 && (
-                  <li>• Autonomía baja ({autonomyHours}h) - considerar agregar baterías.</li>
+                {autonomyHours < 1 && (
+                  <li>• Autonomía baja - considerar agregar baterías.</li>
                 )}
               </ul>
             </div>

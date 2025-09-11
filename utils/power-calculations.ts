@@ -17,13 +17,24 @@ export function calculateTotalKva(components: any[]): number {
 }
 
 export function calculateUPSAutonomy(components: any[]): number {
-  // Fórmula simplificada: (Capacidad en VA * Eficiencia * Factor de batería) / Consumo en W
+  // Fórmula simplificada: (Capacidad útil en Wh) / Consumo en W
   // Factor de batería típico para UPS es ~0.7 para baterías en buen estado
   const totalConsumptionW = calculateTotalPowerConsumption(components)
   const totalCapacityVA = calculateTotalKva(components)
   const efficiency = 0.9
   const batteryFactor = 0.7
-  const autonomyHours = (960 * efficiency * batteryFactor) / totalConsumptionW
+  const packWh = 480 // un pack = 480 Wh aprox
+
+  let totalPacks = 1
+  if (totalCapacityVA >= 5000 && totalCapacityVA < 10000) {
+    totalPacks = 2
+  } else if (totalCapacityVA >= 10000) {
+    totalPacks = 4
+  }
+
+  const totalEnergyWh = packWh * totalPacks
+  const autonomyHours = (totalEnergyWh * efficiency * batteryFactor) / totalConsumptionW
+
   return Math.round(autonomyHours * 10) / 10 // Redondear a 1 decimal
 }
 

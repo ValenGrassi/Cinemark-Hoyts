@@ -52,7 +52,7 @@ export function PortDetailsModal({ component, children }: PortDetailsModalProps)
         
         <ScrollArea className="h-[60vh] pr-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {component.specs.portDetails.map((port) => (
+            {component.specs.portDetails.sort((a,b) => a.portNumber - b.portNumber).map((port) => (
               <CardPorts key={port.portNumber} className={`border-l-4 ${
                 port.isConnected ? 'border-l-green-500' : 'border-l-gray-300'
               }`}>
@@ -63,7 +63,7 @@ export function PortDetailsModal({ component, children }: PortDetailsModalProps)
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="space-y-2">
-                    {port.connectedTo ? (
+                    {port.connectedTo && port.connectedTo != "NULL" ? (
                       <div>
                         <p className="text-sm font-medium text-green-700">Conectado a:</p>
                         <p className="text-sm text-gray-600">{port.connectedTo}</p>
@@ -72,7 +72,7 @@ export function PortDetailsModal({ component, children }: PortDetailsModalProps)
                       <p className="text-sm text-gray-500 italic">Puerto libre</p>
                     )}
                     
-                    {port.description && (
+                    {port.description && port.description !== "No conectado" && (
                       <div>
                         <p className="text-xs text-gray-500">Descripción:</p>
                         <p className="text-xs text-gray-600">{port.description}</p>

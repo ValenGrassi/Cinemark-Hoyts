@@ -44,10 +44,14 @@ interface CinemaListProps {
   onNavigateToLogs: () => void,
   onLogin: () => void,
   onLogout: () => void,
-  isLoading: () => void
+  isLoading: () => void,
+  user: () => string,
+  password: () => string
 }
 
 export function CinemaList({
+  user,
+  password,
   isLoading,
   cinemas,
   onLogin,
@@ -111,7 +115,7 @@ export function CinemaList({
 
   const getUPSWarnings = (cinema: Cinema) => {
     return cinema.rackComponents.filter((component) => {
-      return component.type === "ups" && component.batteryInstallDate && isBatteryDueForReplacement(component.batteryInstallDate)
+      return component.type === "ups" && component.batteryInstallDate && isBatteryDueForReplacement(component.batteryInstallDate) || component.status !== "online" && component.type == "ups"
     }).length
   }
 
@@ -153,10 +157,10 @@ export function CinemaList({
                 </div>
               </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onNavigateToLogs} className="cursor-pointer">
+              {user == "valengrassi7@gmail.com" && password == "123456" && <DropdownMenuItem onClick={onNavigateToLogs} className="cursor-pointer">
                 <FileText className="h-4 w-4 mr-2" />
                 Logs
-              </DropdownMenuItem>
+              </DropdownMenuItem>}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onLogout} className="cursor-pointer text-red-600">
                 <LogOut className="h-4 w-4 mr-2" />
@@ -309,9 +313,9 @@ export function CinemaList({
                     <span>Autonomía UPS:</span>
                     <span
                       className={`font-medium ${
-                        autonomy < 2
+                        autonomy < 1
                           ? "text-red-600"
-                          : autonomy < 4
+                          : autonomy < 2
                           ? "text-yellow-600"
                           : "text-green-600"
                       }`}

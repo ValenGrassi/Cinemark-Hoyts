@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { ArrowLeft, Server, Network, Zap, Cpu, HardDrive, Thermometer, Battery, Clock, AlertTriangle, Redo2 } from 'lucide-react'
+import { ArrowLeft, Server, Network, Zap, Cpu, HardDrive, Thermometer, Battery, Clock, AlertTriangle, Redo2, Shield } from 'lucide-react'
 import { Cinema, RackComponent } from '../types/cinema'
 import { calculateBatteryRemainingLife, getBatteryStatusColor, isBatteryDueForReplacement } from '../utils/battery-utils'
 import { PortDetailsModal } from './port-details-modal'
@@ -78,7 +78,7 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
       case 'patch-panel': return <Network className="h-6 w-6 text-green-600" />
       case 'switch': return <Network className="h-6 w-6 text-green-600" />
       case 'router': return <Network className="h-6 w-6 text-blue-600" />
-      case 'firewall': return <Network className="h-6 w-6 text-red-600" />
+      case 'firewall': return <Shield className="h-6 w-6 text-red-600" />
       case 'wireless-controller': return <Network className="h-6 w-6 text-purple-600" />
       case 'converter': return <Network className="h-6 w-6 text-orange-600" />
       case 'ups': return <Zap className="h-6 w-6 text-purple-600" />
@@ -192,7 +192,6 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
                         <CardTitle>{selectedComponent.name}</CardTitle>
                         <CardDescription>
                           Posición: U{selectedComponent.position}
-                          {selectedComponent.model && ` • Modelo: ${selectedComponent.model}`}
                         </CardDescription>
                       </div>
                     </div>
@@ -314,8 +313,7 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
                     )}
 
                     {(selectedComponent.type === 'switch' || selectedComponent.type === 'patch-panel' || 
-                      selectedComponent.type === 'router' || selectedComponent.type === 'firewall' ||
-                      selectedComponent.type === 'wireless-controller' || selectedComponent.type === 'converter') && 
+                      selectedComponent.type === 'router' || selectedComponent.type === 'firewall' || selectedComponent.type === 'converter') && 
                      selectedComponent.specs?.portDetails && (
                       <div className="col-span-2">
                         <Separator className="mb-3" />

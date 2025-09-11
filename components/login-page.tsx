@@ -42,7 +42,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     setTimeout(() => {
       onLogin(email, password)
       setIsLoading(false)
-    }, 1000)
+    }, 2000)
   }
 
   return (

@@ -15,6 +15,8 @@ type ViewMode = "list" | "view" | "edit" | "logs" | "login"
 
 export default function CinemaManagementApp() {
   const router = useRouter()
+  const [user, setUser] = useState()
+  const [password, setPassword] = useState()
   const [loadCinemas, setCinemas] = useState<Cinema[]>(sampleCinemas)
   const [selectedCinema, setSelectedCinema] = useState<Cinema | null>(null)
   const [viewMode, setViewMode] = useState<ViewMode>("list")
@@ -46,7 +48,9 @@ export default function CinemaManagementApp() {
   }
 
   const handleLogin = (email: string, password: string) => {
-    // por ahora solo simulamos
+    setUser(email)
+    setPassword(password)
+
     setLoggedIn(true)
     setViewMode("list")
   }
@@ -112,6 +116,8 @@ export default function CinemaManagementApp() {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         <CinemaList
+          user={user}
+          password={password}
           cinemas={cinemas}
           loggedIn={loggedIn}
           onLogin={handleNavigateToLogin}
