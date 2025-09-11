@@ -23,7 +23,7 @@ export function calculateUPSAutonomy(components: any[]): number {
   const totalCapacityVA = calculateTotalKva(components)
   const efficiency = 0.9
   const batteryFactor = 0.7
-  const autonomyHours = (totalCapacityVA * efficiency * batteryFactor) / totalConsumptionW
+  const autonomyHours = (960 * efficiency * batteryFactor) / totalConsumptionW
   return Math.round(autonomyHours * 10) / 10 // Redondear a 1 decimal
 }
 

@@ -1,3 +1,4 @@
 {
+  "/racks/[id]/page": "app/racks/[id]/page.js",
   "/page": "app/page.js"
 }

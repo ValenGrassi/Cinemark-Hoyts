@@ -96,6 +96,17 @@ export function RackEditor({ cinema, onBack, onSave }: RackEditorProps) {
   const handleSaveRack = async () => {
     try {
       setIsSaving(true)
+
+      editedCinema.rackComponents.map(c =>
+        c.type === "ups"
+          ? {
+              ...c,
+              batteryInstallDate:
+                c.batteryInstallDate || new Date().toISOString().split("T")[0],
+            }
+          : c
+      )
+
       const payload = { rackComponents: editedCinema.rackComponents }
 
       const updatedCinema = await patchCinema(editedCinema.id, payload)
@@ -116,7 +127,7 @@ export function RackEditor({ cinema, onBack, onSave }: RackEditorProps) {
       localStorage.setItem("rackLogs", JSON.stringify([logEntry, ...existingLogs]))
 
       // Feedback
-      alert(`"¡Cine ${updatedCinema.name} editado correctamente!"`)
+      alert(`"¡Cine ${updatedCinema.location} editado correctamente!"`)
     } catch (err) {
       console.error("Error guardando rack:", err)
       alert("Error al guardar los cambios")
@@ -129,12 +140,12 @@ export function RackEditor({ cinema, onBack, onSave }: RackEditorProps) {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row items-center gap-4">
             <Button
               variant="outline"
               onClick={onBack}
-              className="flex items-center gap-2 bg-transparent cursor-pointer"
+              className="flex self-start items-center gap-2 bg-transparent cursor-pointer md:self-auto"
             >
               <ArrowLeft className="h-4 w-4" />
               Volver
@@ -151,7 +162,7 @@ export function RackEditor({ cinema, onBack, onSave }: RackEditorProps) {
           <Button
             onClick={handleSaveRack}
             disabled={isSaving}
-            className="flex items-center gap-2 cursor-pointer"
+            className="flex items-center gap-2 cursor-pointer self-end md:self-auto"
           >
             <Save className="h-4 w-4" />
             {isSaving ? "Guardando..." : "Guardar Cambios"}
@@ -323,7 +334,7 @@ export function RackEditor({ cinema, onBack, onSave }: RackEditorProps) {
                     <Label>Consumo de Energía (W)</Label>
                     <Input
                       type="number"
-                      value={selectedComponent.powerConsumption || 0}
+                      value={selectedComponent.powerConsumption || 1}
                       onChange={e => handleComponentChange(selectedComponent.id, "powerConsumption", Number(e.target.value))}
                     />
                   </div>}
@@ -344,7 +355,7 @@ export function RackEditor({ cinema, onBack, onSave }: RackEditorProps) {
                           <Label>Puertos Totales</Label>
                           <Input
                             type="number"
-                            value={selectedComponent.specs?.ports || 0}
+                            value={selectedComponent.specs?.ports || 1}
                             onChange={e => handleSpecChange(selectedComponent.id, "ports", Number(e.target.value))}
                           />
                         </div>
@@ -352,7 +363,7 @@ export function RackEditor({ cinema, onBack, onSave }: RackEditorProps) {
                           <Label>Conexiones Activas</Label>
                           <Input
                             type="number"
-                            value={selectedComponent.specs?.connections || 0}
+                            value={selectedComponent.specs?.connections || 1}
                             onChange={e => handleSpecChange(selectedComponent.id, "connections", Number(e.target.value))}
                           />
                         </div>
@@ -368,7 +379,7 @@ export function RackEditor({ cinema, onBack, onSave }: RackEditorProps) {
                           <Label>Capacidad (VA)</Label>
                           <Input
                             type="number"
-                            value={selectedComponent.capacityVA || 0}
+                            value={selectedComponent.capacityVA || 1}
                             onChange={e => handleComponentChange(selectedComponent.id, "capacityVA", Number(e.target.value))}
                           />
                         </div>
@@ -379,10 +390,16 @@ export function RackEditor({ cinema, onBack, onSave }: RackEditorProps) {
                           type="date"
                           value={
                             selectedComponent.batteryInstallDate
-                              ? new Date(selectedComponent.batteryInstallDate).toISOString().split('T')[0]
-                              : ""
+                              ? new Date(selectedComponent.batteryInstallDate).toISOString().split("T")[0]
+                              : new Date().toISOString().split("T")[0] // 👈 hoy por defecto
                           }
-                          onChange={e => handleComponentChange(selectedComponent.id, "batteryInstallDate", e.target.value)}
+                          onChange={e =>
+                            handleComponentChange(
+                              selectedComponent.id,
+                              "batteryInstallDate",
+                              e.target.value || new Date().toISOString().split("T")[0] // 👈 si borran, vuelve a hoy
+                            )
+                          }
                         />
                       </div>
                     </div>

@@ -66,6 +66,10 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
 
   const handleComponentClick = (component: RackComponent) => {
     setSelectedComponent(component)
+
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    }
   }
 
   const getComponentIcon = (type: string) => {
@@ -155,16 +159,25 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Encabezado */}
-        <div className="mb-8 flex items-center gap-4 flex-col md:flex-row">
-          <Button variant="outline" onClick={onBack} className="flex items-center gap-2 cursor-pointer">
+      <div className="mb-8 flex flex-col md:flex-row md:items-center md:gap-4">
+        {/* Botón */}
+        <div className="self-start md:self-auto">
+          <Button
+            variant="outline"
+            onClick={onBack}
+            className="flex items-center gap-2 cursor-pointer"
+          >
             <ArrowLeft className="h-4 w-4" />
             Volver a Ubicaciones
           </Button>
-          <div className="text-center md:text-start">
-            <h1 className="text-3xl font-bold text-gray-900">{cinema.name}</h1>
-            <p className="text-gray-600 mt-1">{cinema.address}</p>
-          </div>
         </div>
+
+        {/* Títulos */}
+        <div className="text-center md:text-left flex-1">
+          <h1 className="text-3xl font-bold text-gray-900">{cinema.name}</h1>
+          <p className="text-gray-600 mt-1">{cinema.address}</p>
+        </div>
+      </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Panel de Información */}
@@ -276,7 +289,7 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
                               <div className="grid grid-cols-2 gap-4 text-xs">
                                 <div>
                                   <p className="text-gray-500">Fecha de Instalación</p>
-                                  <p>{new Date(selectedComponent.batteryInstallDate).toLocaleDateString('es-ES')}</p>
+                                  <p>{new Date(selectedComponent.batteryInstallDate).toISOString().split("T")[0]}</p>
                                 </div>
                                 <div>
                                   <p className="text-gray-500">Vida Útil Restante</p>
@@ -322,7 +335,7 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
                       </div>
                     )}
 
-                    {selectedComponent.type !== "patch-panel" && selectedComponent.powerConsumption && (
+                    {selectedComponent.type !== "patch-panel" && selectedComponent.type !== "ups" && selectedComponent.powerConsumption && (
                       <div className="col-span-2">
                         <Separator className="mb-3" />
                         <div className="space-y-2">
@@ -453,7 +466,7 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
                   <rect x="260" y="30" width="10" height={Math.max(340, 60 + (cinema.rackComponents.length * 60))} fill="#6b7280" />
                   
                   {/* Componentes */}
-                  {cinema.rackComponents.map((component, index) => {
+                  {cinema.rackComponents.sort((a,b) => (a.position ?? 0) - (b.position ?? 0)).map((component, index) => {
                     const ports = component.specs?.ports || 0
 
                     // Calcular filas necesarias

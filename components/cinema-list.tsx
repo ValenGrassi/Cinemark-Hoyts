@@ -176,13 +176,6 @@ export function CinemaList({
         </div>
 
       {isLoading ? <><p>Cargando cines de la base de datos...</p><div></div></> :<>
-      <div className="max-w-md">
-        <Input
-          placeholder="Buscar cines por nombre..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
@@ -204,7 +197,7 @@ export function CinemaList({
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-yellow-600">
+            <div className="text-2xl font-bold text-red-600">
               {cinemas.reduce((acc, cinema) => acc + getUPSWarnings(cinema), 0)}
             </div>
             <div className="text-sm text-gray-600">Alertas UPS</div>
@@ -218,7 +211,15 @@ export function CinemaList({
             <div className="text-sm text-gray-600">Total Unidades UPS</div>
           </CardContent>
         </Card>
-      </div></>}
+      </div>
+      <div className="max-w-md">
+        <Input
+          placeholder="Buscar cines por nombre..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+      </>}
 
       {/* Tarjetas de Cines */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -348,14 +349,14 @@ export function CinemaList({
                     <p>Actualizado {new Date(cinema.lastUpdated).toLocaleDateString('es-ES')}</p>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-1">
-                    <Button
+                    {loggedIn && <Button
                       size="sm"
                       onClick={() => onEditCinema(cinema)}
                       className="flex items-center gap-1 cursor-pointer"
                     >
                       <SquarePen className="h-3 w-3" />
                       Editar
-                    </Button>
+                    </Button>}
                     <Button asChild size="sm" className="flex items-center gap-1 cursor-pointer">
                       <Link href={`/racks/${cinema.id}`}>
                         <Eye className="h-3 w-3" />

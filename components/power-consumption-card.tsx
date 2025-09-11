@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
-import { Zap, Battery, Clock, AlertTriangle } from 'lucide-react'
+import { Zap, Battery, Clock, AlertTriangle, Thermometer } from 'lucide-react'
 import { Cinema } from '../types/cinema'
 import { calculateTotalKva, calculateTotalPowerConsumption, calculateUPSAutonomy, getUPSLoadPercentage } from '../utils/power-calculations'
 
@@ -92,6 +92,18 @@ export function PowerConsumptionCard({ cinema }: PowerConsumptionCardProps) {
             <Clock className="h-3 w-3" />
             <span>Con carga actual de {calculateTotalPowerConsumption(cinema.rackComponents)}W</span>
           </div>
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium flex items-center gap-1">
+              <div className="flex items-center justify-center"><Thermometer className="h-4 w-4" /></div>
+              Temperatura del Rack
+            </span>
+            <span className={`text-lg font-bold text-orange-600 ${getAutonomyColor(autonomyHours)}`}>
+              25ºC
+            </span>
+          </div>
+          
         </div>
 
         {/* Estado de UPS */}
