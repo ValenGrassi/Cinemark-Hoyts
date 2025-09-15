@@ -439,7 +439,7 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
           <div className="flex justify-center">
             <Card className="w-full max-w-md">
               <CardHeader>
-                <CardTitle className="text-center">Rack de Servidores - {cinema.location}</CardTitle>
+                <CardTitle className="text-center">Rack de IT - {cinema.name}</CardTitle>
               </CardHeader>
               <CardContent>
                 <svg

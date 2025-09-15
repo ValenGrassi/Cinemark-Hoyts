@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
-import { Zap, Battery, Clock, AlertTriangle, Thermometer } from 'lucide-react'
+import { Zap, Battery, Clock, AlertTriangle, Thermometer, ServerCrash } from 'lucide-react'
 import { Cinema } from '../types/cinema'
 import { calculateTotalKva, calculateTotalPowerConsumption, calculateUPSAutonomy, getUPSLoadPercentage } from '../utils/power-calculations'
 
@@ -41,6 +41,7 @@ export function PowerConsumptionCard({ cinema }: PowerConsumptionCardProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Consumo Total */}
+        
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Consumo Total del Rack</span>
@@ -102,8 +103,15 @@ export function PowerConsumptionCard({ cinema }: PowerConsumptionCardProps) {
             <span className={`text-lg font-bold text-orange-600 ${getAutonomyColor(autonomyHours)}`}>
               25ºC
             </span>
+          </div>          
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium flex items-center gap-1">
+              <div className="flex items-center justify-center"><ServerCrash className="h-4 w-4" /></div>
+              {cinema.generator ? <span className="text-green-600">Tiene generador</span> : <span className="text-red-600">No tiene generador</span>}
+            </span>
           </div>
-          
         </div>
 
         {/* Estado de UPS */}
