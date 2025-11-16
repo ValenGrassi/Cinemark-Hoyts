@@ -127,7 +127,7 @@ export function CinemaList({
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="flex gap-10 items-center">
           <img src="/SAR.png" className="w-44" />
-          <img src="/cinemark-hoyts.png" className="h-20 " />
+          {/* <img src="/cinemark-hoyts.png" className="h-20 " /> */}
         </div>
         <div className="flex gap-2">
           {/* <Dialog open={showUploader} onOpenChange={setShowUploader}>

@@ -115,14 +115,14 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           </CardContent>
         </Card>
 
-        <div className="mt-10 text-center">
+        {/* <div className="mt-10 text-center">
             <div className="mx-auto mb-4 w-72 h-12 rounded-lg flex items-center justify-center ">
                 <img src="cinemark-hoyts.png"  alt="" />
             </div>
         </div>
         <div className="mt-6 text-center text-sm text-gray-500">
           <p>© 2025 Cinemark Hoyts - Sistema de Gestión de Racks</p>
-        </div>
+        </div> */}
       </div>
     </div>
   )
