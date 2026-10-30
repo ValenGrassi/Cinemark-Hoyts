@@ -11,9 +11,9 @@ interface PowerConsumptionCardProps {
   cinema: Cinema
 }
 
+
 export function PowerConsumptionCard({ cinema }: PowerConsumptionCardProps) {
   const upsComponents = cinema.rackComponents.filter(c => c.type === 'ups')
-  
   const upsCapacity = calculateTotalKva(cinema.rackComponents)
   const loadPercentage = getUPSLoadPercentage(calculateTotalPowerConsumption(cinema.rackComponents), upsCapacity)
   const autonomyHours = calculateUPSAutonomy(cinema.rackComponents)

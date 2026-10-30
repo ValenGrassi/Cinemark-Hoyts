@@ -13,6 +13,9 @@ import { PowerConsumptionCard } from './power-consumption-card'
 import {QRCodeSVG} from "qrcode.react"
 import { Copy, Download } from "lucide-react"
 import { usePathname } from "next/navigation"
+import Camera from "./camera"
+import {useUps} from "./ups"
+import { UpsConsumptionCard } from "./ups-consumption-card"
 
 
 
@@ -71,6 +74,8 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
       window.scrollTo({ top: 0, behavior: "smooth" })
     }
   }
+
+  const { upsData, loading: upsLoading } = useUps(cinema.upsIp)
 
   const getComponentIcon = (type: string) => {
     switch (type) {
@@ -369,7 +374,8 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
             )}
 
             {/* Consumo y Autonomía Energética */}
-            <PowerConsumptionCard cinema={cinema} />
+              <PowerConsumptionCard cinema={cinema}  />
+
 
             {/* Resumen de Estado */}
             <Card>
@@ -406,7 +412,26 @@ export function RackDashboard({ cinema, onBack }: RackDashboardProps) {
               </CardContent>
             </Card>
 
+            {cinema.cameraEnabled && <Card>
+              <CardHeader>
+                <CardTitle>Cámara en vivo</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Camera ip={cinema.cameraIp} />
+              </CardContent>
+            </Card>}
 
+            {cinema.upsEnabled && upsLoading || !upsData ? (
+              <div className="p-6">⏳ Cargando datos del UPS…</div>
+            ) : 
+            <Card>
+                <CardHeader>
+                  <CardTitle>UPS en vivo</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <UpsConsumptionCard cinema={cinema} upsData={upsData} />
+                </CardContent>
+              </Card>}
 
           {/* QR */}
           <Card>

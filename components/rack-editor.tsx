@@ -9,22 +9,24 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
-import { ArrowLeft, Server, Network, Zap, Plus, Trash2, Save, X } from "lucide-react"
+import { ArrowLeft, Server, Network, Zap, Plus, Trash2, Save, X, Settings } from "lucide-react"
 import type { Cinema, RackComponent } from "../types/cinema"
 import { calculateTotalKva, calculateTotalPowerConsumption, calculateUPSAutonomy } from "@/utils/power-calculations"
-import { usePatchCinema } from "@/hooks/patchCinema"
+import { usePatchCinema, usePatchComponents } from "@/hooks/patchCinema"
+import Link from "next/link"
 
 interface RackEditorProps {
   cinema: Cinema
+  onConfigCinema: (cinema: Cinema) => void
   onBack: () => void
   onSave: (updatedCinema: Cinema) => void
 }
 
-export function RackEditor({ cinema, onBack, onSave }: RackEditorProps) {
+export function RackEditor({ cinema, onConfigCinema, onBack, onSave }: RackEditorProps) {
   const [editedCinema, setEditedCinema] = useState<Cinema>({ ...cinema })
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
-  const { patchCinema } = usePatchCinema()
+  const { patchCinema } = usePatchComponents()
 
   const selectedComponent =
     editedCinema.rackComponents.find(c => c.id === selectedComponentId) || null
@@ -93,6 +95,15 @@ export function RackEditor({ cinema, onBack, onSave }: RackEditorProps) {
     }
   }
 
+  const handleConfigRack = () => {
+    try {
+      onConfigCinema(cinema)
+      console.log("abc")
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
   const handleSaveRack = async () => {
     try {
       setIsSaving(true)
@@ -155,18 +166,27 @@ export function RackEditor({ cinema, onBack, onSave }: RackEditorProps) {
                 Editar Rack - {editedCinema.name}
               </h1>
               <p className="text-gray-600 mt-1">
-                Modifica la configuración del rack y sus componentes
+                Modifica los componentes del rack y sus características
               </p>
             </div>
           </div>
-          <Button
-            onClick={handleSaveRack}
-            disabled={isSaving}
-            className="flex items-center gap-2 cursor-pointer self-end md:self-auto"
-          >
-            <Save className="h-4 w-4" />
-            {isSaving ? "Guardando..." : "Guardar Cambios"}
-          </Button>
+          <div className="m-auto md:m-0 flex flex-col sm:flex-row items-center gap-2 self-end md:self-auto">
+            <Button
+                onClick={() => onConfigCinema(cinema)}
+                className="w-[11rem] flex items-center gap-2 cursor-pointer self-end md:self-auto"
+              >
+              <Settings className="h-4 w-4" />
+              Configuración
+            </Button>
+            <Button
+              onClick={handleSaveRack}
+              disabled={isSaving}
+              className="w-[11rem] flex items-center gap-2 cursor-pointer self-end md:self-auto"
+            >
+              <Save className="h-4 w-4" />
+              {isSaving ? "Guardando..." : "Guardar Cambios"}
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

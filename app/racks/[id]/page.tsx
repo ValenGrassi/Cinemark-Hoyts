@@ -15,7 +15,6 @@ export default function RackPage() {
   // Hook que trae los cines desde la API
   const { cinema, isLoading, error } = useCinema(id)
 
-
   if (isLoading) {
     return <div className="p-6 text-center">Cargando datos del cine...</div>
   }

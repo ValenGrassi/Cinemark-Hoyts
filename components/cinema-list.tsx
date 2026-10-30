@@ -33,12 +33,14 @@ import { calculateBatteryRemainingLife, isBatteryDueForReplacement } from "@/uti
 import Link from "next/link"
 import { calculateTotalKva, calculateTotalPowerConsumption, calculateUPSAutonomy } from "@/utils/power-calculations"
 import { LoginPage } from "./login-page"
+import { Loader } from "./ui/loading"
 
 interface CinemaListProps {
   cinemas: Cinema[]
   loggedIn: () => boolean,
   onSelectCinema: (cinema: Cinema) => void
-  onEditCinema: (cinema: Cinema) => void
+  onConfigCinema: (cinema: Cinema) => void
+  onEditCinema: (cinema: Cinema, onConfigCinema?: any) => void
   onUploadExcel: (file: File, cinemaId?: string) => void
   onCreateCinema: (cinemaData: Cinema) => void
   onNavigateToLogs: () => void,
@@ -58,7 +60,7 @@ export function CinemaList({
   loggedIn,
   onSelectCinema,
   onEditCinema,
-  onUploadExcel,
+  onConfigCinema,
   onCreateCinema,
   onNavigateToLogs,
   onLogout,
@@ -183,7 +185,7 @@ export function CinemaList({
           <p className="text-gray-600 mt-2">Gestiona los racks de servidores en todas las ubicaciones de cines</p>
         </div>
 
-      {isLoading ? <><p>Cargando cines de la base de datos...</p><div></div></> :<>
+      {isLoading ? <Loader /> :<>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
@@ -357,14 +359,14 @@ export function CinemaList({
                     <p>Actualizado {new Date(cinema.lastUpdated).toLocaleDateString('es-ES')}</p>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-1">
-                    {loggedIn && <Button
+                    <Button
                       size="sm"
-                      onClick={() => onEditCinema(cinema)}
+                      onClick={() => onEditCinema(cinema, onConfigCinema)}
                       className="flex items-center gap-1 cursor-pointer"
                     >
                       <SquarePen className="h-3 w-3" />
                       Editar
-                    </Button>}
+                    </Button>
                     <Button asChild size="sm" className="flex items-center gap-1 cursor-pointer">
                       <Link href={`/racks/${cinema.id}`}>
                         <Eye className="h-3 w-3" />
@@ -378,6 +380,7 @@ export function CinemaList({
             </Card>
           )
         })}
+        
       </div>
 
       {filteredCinemas.length === 0 && !isLoading && (

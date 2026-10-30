@@ -1,7 +1,7 @@
 import type { Cinema } from "@/types/cinema";
 
 async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
-  const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+  const base = "http://192.168.0.197:4000";
   const url = `${base}${path}`;
   const response = await fetch(url, {
     ...opts,
@@ -10,6 +10,8 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
       ...(opts.headers || {}),
     },
   });
+
+  console.log(response)
 
   // manejo de error uniforme
   if (!response.ok) {

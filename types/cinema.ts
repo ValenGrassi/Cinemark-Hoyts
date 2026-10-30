@@ -35,4 +35,8 @@ export interface Cinema {
   rackComponents: RackComponent[]
   lastUpdated: string
   generator: boolean
+  cameraEnabled: boolean
+  upsEnabled: boolean
+  cameraIp: string
+  upsIp: string
 }

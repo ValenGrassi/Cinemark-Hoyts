@@ -10,8 +10,10 @@ import { sampleCinemas } from "../data/sample-cinemas"
 import { useCinemas } from "@/hooks/useCinemas"
 import { LoginPage } from "@/components/login-page"
 import { useRouter } from "next/navigation"
+import Camera from "@/components/camera"
+import { RackConfig } from "@/components/rack-config"
 
-type ViewMode = "list" | "view" | "edit" | "logs" | "login"
+type ViewMode = "list" | "view" | "edit" | "logs" | "login" | "config"
 
 export default function CinemaManagementApp() {
   const router = useRouter()
@@ -19,6 +21,7 @@ export default function CinemaManagementApp() {
   const [password, setPassword] = useState()
   const [loadCinemas, setCinemas] = useState<Cinema[]>(sampleCinemas)
   const [selectedCinema, setSelectedCinema] = useState<Cinema | null>(null)
+  const [configCinema, setConfigCinema] = useState<Cinema | null>(null)
   const [viewMode, setViewMode] = useState<ViewMode>("list")
   const [loggedIn, setLoggedIn] = useState(false) // inicializamos en true para ver dashboard
 
@@ -29,9 +32,15 @@ export default function CinemaManagementApp() {
     setViewMode("view")
   }
 
-  const handleEditCinema = (cinema: Cinema) => {
+  const handleEditCinema = (cinema: Cinema, handleConfigCinema: any) => {
+    handleConfigCinema(cinema)
     setSelectedCinema(cinema)
     setViewMode("edit")
+  }
+
+  const handleConfigCinema = (cinema: Cinema) => {
+    setSelectedCinema(cinema)
+    setViewMode("config")
   }
 
   const handleBackToList = () => {
@@ -101,7 +110,11 @@ export default function CinemaManagementApp() {
   }
 
   if (viewMode === "edit" && selectedCinema) {
-    return <RackEditor cinema={selectedCinema} onBack={handleBackToList} onSave={handleSaveCinema} />
+    return <RackEditor cinema={selectedCinema} onBack={handleBackToList} onSave={handleSaveCinema} onConfigCinema={handleConfigCinema} />
+  }
+  
+  if (viewMode === "config" && selectedCinema) {
+    return <RackConfig cinema={selectedCinema} onBack={handleBackToList} onSave={handleSaveCinema} />
   }
 
   if (viewMode === "logs") {
@@ -121,6 +134,7 @@ export default function CinemaManagementApp() {
           cinemas={cinemas}
           loggedIn={loggedIn}
           onLogin={handleNavigateToLogin}
+          onConfigCinema={handleConfigCinema}
           onSelectCinema={handleSelectCinema}
           onEditCinema={handleEditCinema}
           onUploadExcel={handleUploadExcel}
